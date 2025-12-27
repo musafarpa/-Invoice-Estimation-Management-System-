@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter clean:*)",
+      "Bash(git init:*)",
+      "Bash(cmd /c \"echo # Invoice ^& Estimation Management System > README.md\")",
+      "Bash(git add:*)",
+      "Bash(cmd /c \"del nul 2>nul\")"
+    ]
+  }
+}
