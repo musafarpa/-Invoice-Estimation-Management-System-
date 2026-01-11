@@ -10,7 +10,11 @@
       "Bash(git init:*)",
       "Bash(cmd /c \"echo # Invoice ^& Estimation Management System > README.md\")",
       "Bash(git add:*)",
-      "Bash(cmd /c \"del nul 2>nul\")"
+      "Bash(cmd /c \"del nul 2>nul\")",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)"
     ]
   }
 }

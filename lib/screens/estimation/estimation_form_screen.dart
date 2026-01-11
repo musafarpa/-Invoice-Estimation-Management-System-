@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/estimation_model.dart';
 import '../../providers/estimation_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class EstimationFormScreen extends StatefulWidget {
   final EstimationModel? estimation;
@@ -15,12 +16,13 @@ class EstimationFormScreen extends StatefulWidget {
 class _EstimationFormScreenState extends State<EstimationFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _clientNameController;
-  late TextEditingController _clientEmailController;
-  late TextEditingController _clientPhoneController;
   late TextEditingController _clientAddressController;
+  late TextEditingController _clientVatController;
+  late TextEditingController _clientPostalCodeController;
+  late TextEditingController _clientCityController;
+  late TextEditingController _clientCountryController;
   late TextEditingController _notesController;
-  late DateTime _validUntil;
-  late String _status;
+  late TextEditingController _discountController;
   List<EstimationItem> _items = [];
 
   @override
@@ -28,31 +30,38 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
     super.initState();
     final est = widget.estimation;
     _clientNameController = TextEditingController(text: est?.clientName ?? '');
-    _clientEmailController = TextEditingController(text: est?.clientEmail ?? '');
-    _clientPhoneController = TextEditingController(text: est?.clientPhone ?? '');
     _clientAddressController = TextEditingController(text: est?.clientAddress ?? '');
+    _clientVatController = TextEditingController(text: est?.clientVatNumber ?? '');
+    _clientPostalCodeController = TextEditingController(text: est?.clientPostalCode ?? '');
+    _clientCityController = TextEditingController(text: est?.clientCity ?? '');
+    _clientCountryController = TextEditingController(text: est?.clientCountry ?? '');
     _notesController = TextEditingController(text: est?.notes ?? '');
-    _validUntil = est?.validUntil ?? DateTime.now().add(const Duration(days: 30));
-    _status = est?.status ?? 'pending';
+    _discountController = TextEditingController(text: est?.discount?.toStringAsFixed(2) ?? '');
     _items = est?.items.toList() ?? [];
   }
 
   @override
   void dispose() {
     _clientNameController.dispose();
-    _clientEmailController.dispose();
-    _clientPhoneController.dispose();
     _clientAddressController.dispose();
+    _clientVatController.dispose();
+    _clientPostalCodeController.dispose();
+    _clientCityController.dispose();
+    _clientCountryController.dispose();
     _notesController.dispose();
+    _discountController.dispose();
     super.dispose();
   }
 
   void _addItem() {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _ItemFormSheet(
+        isDark: isDark,
         onSave: (item) {
           setState(() {
             _items.add(item);
@@ -63,11 +72,14 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
   }
 
   void _editItem(int index) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _ItemFormSheet(
+        isDark: isDark,
         item: _items[index],
         onSave: (item) {
           setState(() {
@@ -84,7 +96,9 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
     });
   }
 
-  void _saveEstimation() {
+  bool _isSaving = false;
+
+  Future<void> _saveEstimation() async {
     if (_formKey.currentState!.validate()) {
       if (_items.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -100,45 +114,82 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
         return;
       }
 
+      setState(() {
+        _isSaving = true;
+      });
+
       final provider = Provider.of<EstimationProvider>(context, listen: false);
+      final discountValue = double.tryParse(_discountController.text.trim());
       final estimation = EstimationModel(
         id: widget.estimation?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         estimationNumber: widget.estimation?.estimationNumber ?? provider.generateEstimationNumber(),
         clientName: _clientNameController.text.trim(),
-        clientEmail: _clientEmailController.text.trim(),
-        clientPhone: _clientPhoneController.text.trim(),
+        clientEmail: '',
+        clientPhone: '',
         clientAddress: _clientAddressController.text.trim(),
+        clientVatNumber: _clientVatController.text.trim().isEmpty ? null : _clientVatController.text.trim(),
+        clientPostalCode: _clientPostalCodeController.text.trim().isEmpty ? null : _clientPostalCodeController.text.trim(),
+        clientCity: _clientCityController.text.trim().isEmpty ? null : _clientCityController.text.trim(),
+        clientCountry: _clientCountryController.text.trim().isEmpty ? null : _clientCountryController.text.trim(),
         items: _items,
         createdAt: widget.estimation?.createdAt ?? DateTime.now(),
-        validUntil: _validUntil,
-        status: _status,
+        validUntil: DateTime.now().add(const Duration(days: 30)),
+        status: 'pending',
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        discount: discountValue,
       );
 
+      bool success;
       if (widget.estimation != null) {
-        provider.updateEstimation(estimation);
+        success = await provider.updateEstimation(estimation);
       } else {
-        provider.addEstimation(estimation);
+        success = await provider.addEstimation(estimation);
       }
 
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(widget.estimation != null ? 'Estimation updated' : 'Estimation created'),
-          backgroundColor: Colors.green.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
+      if (!mounted) return;
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.estimation != null ? 'Estimation updated' : 'Estimation created'),
+              backgroundColor: Colors.green.shade400,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(provider.errorMessage ?? 'Failed to save estimation'),
+              backgroundColor: Colors.red.shade400,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F5),
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
       body: SafeArea(
         child: Column(
           children: [
@@ -154,35 +205,38 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                             blurRadius: 10,
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
-                        color: Color(0xFF1A1A1A),
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                       ),
                     ),
                   ),
                   Text(
                     widget.estimation != null ? 'Edit Estimation' : 'New Estimation',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                     ),
                   ),
                   GestureDetector(
-                    onTap: _saveEstimation,
+                    onTap: _isSaving ? null : _saveEstimation,
                     child: Container(
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE8F959),
+                        color: _isSaving
+                            ? (isDark ? Colors.grey.shade700 : Colors.grey.shade300)
+                            : const Color(0xFFE8F959),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
@@ -191,9 +245,20 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Color(0xFF1A1A1A),
+                      child: Center(
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF1A1A1A),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.check,
+                                color: Color(0xFF1A1A1A),
+                              ),
                       ),
                     ),
                   ),
@@ -208,11 +273,12 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Client Information',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -220,6 +286,7 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                         controller: _clientNameController,
                         label: 'Client Name',
                         icon: Icons.person_outline,
+                        isDark: isDark,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter client name';
@@ -229,138 +296,48 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                       ),
                       const SizedBox(height: 12),
                       _buildTextField(
-                        controller: _clientEmailController,
-                        label: 'Email',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter email';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _clientPhoneController,
-                        label: 'Phone',
-                        icon: Icons.phone_outlined,
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter phone';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
                         controller: _clientAddressController,
-                        label: 'Address',
+                        label: 'Client Address',
                         icon: Icons.location_on_outlined,
-                        maxLines: 2,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter address';
-                          }
-                          return null;
-                        },
+                        isDark: isDark,
                       ),
-                      const SizedBox(height: 24),
-
-                      // Valid Until & Status
+                      const SizedBox(height: 12),
+                      _buildTextField(
+                        controller: _clientVatController,
+                        label: 'Client VAT Number',
+                        icon: Icons.receipt_outlined,
+                        isDark: isDark,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
-                            child: GestureDetector(
-                              onTap: () async {
-                                final date = await showDatePicker(
-                                  context: context,
-                                  initialDate: _validUntil,
-                                  firstDate: DateTime.now(),
-                                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                                );
-                                if (date != null) {
-                                  setState(() {
-                                    _validUntil = date;
-                                  });
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.03),
-                                      blurRadius: 10,
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.calendar_today_outlined,
-                                        size: 20, color: Colors.grey.shade500),
-                                    const SizedBox(width: 12),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Valid Until',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey.shade500,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${_validUntil.day}/${_validUntil.month}/${_validUntil.year}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            child: _buildTextField(
+                              controller: _clientCityController,
+                              label: 'City',
+                              icon: Icons.location_city_outlined,
+                              isDark: isDark,
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.03),
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _status,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                                    DropdownMenuItem(value: 'approved', child: Text('Approved')),
-                                    DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() {
-                                        _status = value;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
+                            child: _buildTextField(
+                              controller: _clientPostalCodeController,
+                              label: 'Postal Code',
+                              icon: Icons.markunread_mailbox_outlined,
+                              isDark: isDark,
+                              keyboardType: TextInputType.number,
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextField(
+                        controller: _clientCountryController,
+                        label: 'Country',
+                        icon: Icons.flag_outlined,
+                        isDark: isDark,
                       ),
                       const SizedBox(height: 24),
 
@@ -368,11 +345,12 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Items',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                             ),
                           ),
                           GestureDetector(
@@ -388,13 +366,14 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                               ),
                               child: const Row(
                                 children: [
-                                  Icon(Icons.add, size: 18),
+                                  Icon(Icons.add, size: 18, color: Color(0xFF1A1A1A)),
                                   SizedBox(width: 4),
                                   Text(
                                     'Add Item',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: 13,
+                                      color: Color(0xFF1A1A1A),
                                     ),
                                   ),
                                 ],
@@ -409,10 +388,10 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(32),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.grey.shade200,
+                              color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200,
                               style: BorderStyle.solid,
                             ),
                           ),
@@ -421,13 +400,13 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                               Icon(
                                 Icons.add_shopping_cart_outlined,
                                 size: 40,
-                                color: Colors.grey.shade300,
+                                color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'No items added',
                                 style: TextStyle(
-                                  color: Colors.grey.shade500,
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                                 ),
                               ),
                             ],
@@ -440,11 +419,11 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                             margin: const EdgeInsets.only(bottom: 8),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
+                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -459,16 +438,17 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                                       children: [
                                         Text(
                                           item.description,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.w500,
+                                            color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          '${item.quantity} x \$${item.unitPrice.toStringAsFixed(2)}',
+                                          '${item.quantity} ${item.unit} x SAR ${item.unitPrice.toStringAsFixed(2)}',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.grey.shade600,
+                                            color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                                           ),
                                         ),
                                       ],
@@ -476,9 +456,10 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                                   ),
                                 ),
                                 Text(
-                                  '\$${item.total.toStringAsFixed(2)}',
-                                  style: const TextStyle(
+                                  '${item.total.toStringAsFixed(2)} SAR',
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
+                                    color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -496,20 +477,41 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                         }),
                       const SizedBox(height: 24),
 
-                      // Notes
-                      const Text(
-                        'Notes (Optional)',
+                      // Subject/Notes
+                      Text(
+                        'Subject',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                       const SizedBox(height: 12),
                       _buildTextField(
                         controller: _notesController,
-                        label: 'Add notes...',
-                        icon: Icons.note_outlined,
-                        maxLines: 3,
+                        label: 'Subject (e.g., Website Development Quote)',
+                        icon: Icons.subject_outlined,
+                        isDark: isDark,
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Discount
+                      Text(
+                        'Discount',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextField(
+                        controller: _discountController,
+                        label: 'Discount Amount',
+                        icon: Icons.discount_outlined,
+                        keyboardType: TextInputType.number,
+                        isDark: isDark,
                       ),
                       const SizedBox(height: 100),
                     ],
@@ -530,14 +532,15 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
     TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
+    bool isDark = false,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -546,15 +549,21 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
+        style: TextStyle(
+          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+        ),
         decoration: InputDecoration(
           hintText: label,
-          prefixIcon: Icon(icon, color: Colors.grey.shade400),
+          hintStyle: TextStyle(
+            color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+          ),
+          prefixIcon: Icon(icon, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         ),
         validator: validator,
       ),
@@ -565,8 +574,9 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
 class _ItemFormSheet extends StatefulWidget {
   final EstimationItem? item;
   final Function(EstimationItem) onSave;
+  final bool isDark;
 
-  const _ItemFormSheet({this.item, required this.onSave});
+  const _ItemFormSheet({this.item, required this.onSave, required this.isDark});
 
   @override
   State<_ItemFormSheet> createState() => _ItemFormSheetState();
@@ -577,7 +587,10 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
   late TextEditingController _descriptionController;
   late TextEditingController _quantityController;
   late TextEditingController _priceController;
-  late TextEditingController _taxController;
+  String _selectedUnit = 'unit';
+
+  // Available units
+  final List<String> _units = ['unit', 'pcs', 'kg', 'g', 'liter', 'ml', 'hour', 'day', 'month', 'year', 'box', 'set', 'sqm', 'job'];
 
   @override
   void initState() {
@@ -587,8 +600,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
         text: widget.item?.quantity.toString() ?? '1');
     _priceController = TextEditingController(
         text: widget.item?.unitPrice.toString() ?? '');
-    _taxController = TextEditingController(
-        text: widget.item?.taxRate.toString() ?? '0');
+    _selectedUnit = widget.item?.unit ?? 'unit';
   }
 
   @override
@@ -596,19 +608,19 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
     _descriptionController.dispose();
     _quantityController.dispose();
     _priceController.dispose();
-    _taxController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDark;
     return Container(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -623,25 +635,52 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                 children: [
                   Text(
                     widget.item != null ? 'Edit Item' : 'Add Item',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                     ),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close),
+                    child: Icon(
+                      Icons.close,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _descriptionController,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                ),
                 decoration: InputDecoration(
                   labelText: 'Description',
+                  labelStyle: TextStyle(
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                    ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -657,11 +696,34 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                     child: TextFormField(
                       controller: _quantityController,
                       keyboardType: TextInputType.number,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Quantity',
+                        labelStyle: TextStyle(
+                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                          ),
                         ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -673,20 +735,48 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: TextFormField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedUnit,
+                      dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                      ),
                       decoration: InputDecoration(
-                        labelText: 'Unit Price',
+                        labelText: 'Unit',
+                        labelStyle: TextStyle(
+                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                          ),
                         ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
-                        }
-                        return null;
+                      items: _units.map((unit) {
+                        return DropdownMenuItem(
+                          value: unit,
+                          child: Text(unit),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedUnit = value ?? 'unit';
+                        });
                       },
                     ),
                   ),
@@ -694,14 +784,43 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _taxController,
+                controller: _priceController,
                 keyboardType: TextInputType.number,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                ),
                 decoration: InputDecoration(
-                  labelText: 'Tax Rate (%)',
+                  labelText: 'Unit Price',
+                  labelStyle: TextStyle(
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                    ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade300,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Required';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -715,22 +834,25 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                             DateTime.now().millisecondsSinceEpoch.toString(),
                         description: _descriptionController.text.trim(),
                         quantity: int.tryParse(_quantityController.text) ?? 1,
+                        unit: _selectedUnit,
                         unitPrice: double.tryParse(_priceController.text) ?? 0,
-                        taxRate: double.tryParse(_taxController.text) ?? 0,
                       );
                       widget.onSave(item);
                       Navigator.pop(context);
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A1A1A),
+                    backgroundColor: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Text(
                     widget.item != null ? 'Update Item' : 'Add Item',
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),

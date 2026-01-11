@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'providers/auth_provider.dart';
+import 'providers/company_provider.dart';
 import 'providers/estimation_provider.dart';
 import 'providers/invoice_provider.dart';
 import 'providers/language_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/auth/login_screen.dart';
 
 void main() {
@@ -19,27 +21,27 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CompanyProvider()),
         ChangeNotifierProvider(create: (_) => EstimationProvider()),
         ChangeNotifierProvider(create: (_) => InvoiceProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: Consumer<LanguageProvider>(
-        builder: (context, langProvider, child) {
+      child: Consumer2<LanguageProvider, ThemeProvider>(
+        builder: (context, langProvider, themeProvider, child) {
           return MaterialApp(
             title: 'Invoice & Estimation',
             debugShowCheckedModeBanner: false,
             locale: langProvider.locale,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFFE8F959),
-                brightness: Brightness.light,
+            themeMode: themeProvider.themeMode,
+            theme: ThemeProvider.lightTheme.copyWith(
+              textTheme: GoogleFonts.montserratTextTheme(
+                ThemeProvider.lightTheme.textTheme,
               ),
-              scaffoldBackgroundColor: const Color(0xFFF5F7F5),
-              useMaterial3: true,
-              textTheme: GoogleFonts.montserratTextTheme(),
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
+            ),
+            darkTheme: ThemeProvider.darkTheme.copyWith(
+              textTheme: GoogleFonts.montserratTextTheme(
+                ThemeProvider.darkTheme.textTheme,
               ),
             ),
             home: const LoginScreen(),

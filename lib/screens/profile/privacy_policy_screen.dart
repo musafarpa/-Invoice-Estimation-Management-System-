@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -8,11 +9,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
 
     return Directionality(
       textDirection: langProvider.isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7F5),
+        backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
         body: SafeArea(
           child: Column(
             children: [
@@ -27,18 +30,18 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                               blurRadius: 10,
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                     ),
@@ -46,10 +49,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         langProvider.privacyPolicy,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                     ),
@@ -63,11 +66,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
+                          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
                           blurRadius: 10,
                         ),
                       ],
@@ -80,42 +83,49 @@ class PrivacyPolicyScreen extends StatelessWidget {
                           langProvider.isArabic
                               ? 'نقوم بجمع المعلومات التي تقدمها مباشرة لنا، مثل اسمك وعنوان بريدك الإلكتروني ومعلومات الفواتير.'
                               : 'We collect information you provide directly to us, such as your name, email address, and billing information.',
+                          isDark,
                         ),
                         _buildSection(
                           langProvider.isArabic ? 'استخدام المعلومات' : 'Use of Information',
                           langProvider.isArabic
                               ? 'نستخدم المعلومات التي نجمعها لتوفير وصيانة وتحسين خدماتنا، ومعالجة المعاملات، وإرسال المعلومات ذات الصلة.'
                               : 'We use the information we collect to provide, maintain, and improve our services, process transactions, and send relevant information.',
+                          isDark,
                         ),
                         _buildSection(
                           langProvider.isArabic ? 'مشاركة المعلومات' : 'Information Sharing',
                           langProvider.isArabic
                               ? 'لا نشارك معلوماتك الشخصية مع أطراف ثالثة إلا عند الضرورة لتقديم خدماتنا أو عندما يقتضي القانون ذلك.'
                               : 'We do not share your personal information with third parties except when necessary to provide our services or when required by law.',
+                          isDark,
                         ),
                         _buildSection(
                           langProvider.isArabic ? 'أمن البيانات' : 'Data Security',
                           langProvider.isArabic
                               ? 'نتخذ تدابير معقولة للمساعدة في حماية معلوماتك الشخصية من الفقدان أو السرقة أو سوء الاستخدام.'
                               : 'We take reasonable measures to help protect your personal information from loss, theft, or misuse.',
+                          isDark,
                         ),
                         _buildSection(
                           langProvider.isArabic ? 'ملفات تعريف الارتباط' : 'Cookies',
                           langProvider.isArabic
                               ? 'قد نستخدم ملفات تعريف الارتباط والتقنيات المماثلة لجمع المعلومات حول تفاعلاتك مع تطبيقنا.'
                               : 'We may use cookies and similar technologies to collect information about your interactions with our application.',
+                          isDark,
                         ),
                         _buildSection(
                           langProvider.isArabic ? 'حقوقك' : 'Your Rights',
                           langProvider.isArabic
                               ? 'لديك الحق في الوصول إلى معلوماتك الشخصية وتصحيحها وحذفها. يمكنك أيضًا إلغاء الاشتراك في الاتصالات التسويقية.'
                               : 'You have the right to access, correct, and delete your personal information. You can also opt out of marketing communications.',
+                          isDark,
                         ),
                         _buildSection(
                           langProvider.isArabic ? 'اتصل بنا' : 'Contact Us',
                           langProvider.isArabic
                               ? 'إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على support@invoiceapp.com'
                               : 'If you have any questions about this Privacy Policy, please contact us at support@invoiceapp.com',
+                          isDark,
                         ),
                         const SizedBox(height: 20),
                         Text(
@@ -124,7 +134,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                               : 'Last updated: December 2024',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade500,
+                            color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -141,7 +151,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(String title, String content) {
+  Widget _buildSection(String title, String content, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -149,10 +159,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
             ),
           ),
           const SizedBox(height: 8),
@@ -160,7 +170,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             content,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade700,
+              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
               height: 1.6,
             ),
           ),

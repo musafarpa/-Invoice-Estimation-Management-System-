@@ -18,6 +18,11 @@ dependencies:
   path_provider: ^2.1.4
   share_plus: ^10.1.4
   open_file: ^3.5.10
+  http: ^1.2.0
+  shared_preferences: ^2.2.2
+  barcode: ^2.2.8
+  image_picker: ^1.1.2
+  image_picker_for_web: ^3.0.5
 
 dev_dependencies:
   flutter_test:

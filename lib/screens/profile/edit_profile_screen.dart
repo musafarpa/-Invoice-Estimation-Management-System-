@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../models/user_model.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -37,12 +38,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
     final user = authProvider.currentUser;
 
     return Directionality(
       textDirection: langProvider.isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7F5),
+        backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
         body: SafeArea(
           child: Column(
             children: [
@@ -57,28 +60,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                               blurRadius: 10,
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Text(
                       langProvider.editProfile,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                       ),
                     ),
                     const Spacer(),
@@ -97,6 +100,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           langProvider.save,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1A1A),
                           ),
                         ),
                       ),
@@ -179,6 +183,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         controller: _nameController,
                         label: langProvider.name,
                         icon: Icons.person_outline,
+                        isDark: isDark,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
@@ -186,6 +191,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         label: langProvider.email,
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
+                        isDark: isDark,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
@@ -193,6 +199,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         label: langProvider.phone,
                         icon: Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
+                        isDark: isDark,
                       ),
                       const SizedBox(height: 40),
                     ],
@@ -211,14 +218,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
+    bool isDark = false,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -226,15 +234,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        style: TextStyle(
+          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+        ),
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon, color: Colors.grey.shade400),
+          labelStyle: TextStyle(
+            color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+          ),
+          prefixIcon: Icon(icon, color: isDark ? Colors.grey.shade400 : Colors.grey.shade400),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         ),
       ),
     );

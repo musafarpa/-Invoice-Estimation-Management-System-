@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -8,11 +9,13 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
 
     return Directionality(
       textDirection: langProvider.isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7F5),
+        backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
         body: SafeArea(
           child: Column(
             children: [
@@ -27,28 +30,28 @@ class AboutScreen extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                               blurRadius: 10,
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Text(
                       langProvider.aboutUs,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                       ),
                     ),
                   ],
@@ -87,10 +90,10 @@ class AboutScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'الفواتير والتقديرات'
                             : 'Invoice & Estimation',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -98,7 +101,7 @@ class AboutScreen extends StatelessWidget {
                         langProvider.isArabic ? 'الإصدار 1.0.0' : 'Version 1.0.0',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey.shade600,
+                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -107,11 +110,11 @@ class AboutScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
                               blurRadius: 10,
                             ),
                           ],
@@ -125,17 +128,17 @@ class AboutScreen extends StatelessWidget {
                                   : 'Invoice & Estimation Management System is a comprehensive solution for efficiently managing your invoices and estimations. The app provides an easy-to-use interface with powerful features to streamline your financial operations.',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey.shade700,
+                                color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
                                 height: 1.6,
                               ),
                             ),
                             const SizedBox(height: 20),
                             Text(
                               langProvider.isArabic ? 'الميزات الرئيسية:' : 'Key Features:',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A1A1A),
+                                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -143,31 +146,37 @@ class AboutScreen extends StatelessWidget {
                               langProvider.isArabic
                                   ? 'إنشاء وإدارة الفواتير'
                                   : 'Create and manage invoices',
+                              isDark,
                             ),
                             _buildFeatureItem(
                               langProvider.isArabic
                                   ? 'إنشاء وإدارة التقديرات'
                                   : 'Create and manage estimations',
+                              isDark,
                             ),
                             _buildFeatureItem(
                               langProvider.isArabic
                                   ? 'تحويل التقديرات إلى فواتير'
                                   : 'Convert estimations to invoices',
+                              isDark,
                             ),
                             _buildFeatureItem(
                               langProvider.isArabic
                                   ? 'إدارة المستخدمين'
                                   : 'User management',
+                              isDark,
                             ),
                             _buildFeatureItem(
                               langProvider.isArabic
                                   ? 'دعم متعدد اللغات'
                                   : 'Multi-language support',
+                              isDark,
                             ),
                             _buildFeatureItem(
                               langProvider.isArabic
                                   ? 'واجهة مستخدم حديثة'
                                   : 'Modern user interface',
+                              isDark,
                             ),
                           ],
                         ),
@@ -178,11 +187,11 @@ class AboutScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
                               blurRadius: 10,
                             ),
                           ],
@@ -192,26 +201,29 @@ class AboutScreen extends StatelessWidget {
                           children: [
                             Text(
                               langProvider.isArabic ? 'اتصل بنا' : 'Contact Us',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A1A1A),
+                                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                               ),
                             ),
                             const SizedBox(height: 16),
                             _buildContactItem(
                               Icons.email_outlined,
                               'support@invoiceapp.com',
+                              isDark,
                             ),
                             const SizedBox(height: 12),
                             _buildContactItem(
                               Icons.language_outlined,
                               'www.invoiceapp.com',
+                              isDark,
                             ),
                             const SizedBox(height: 12),
                             _buildContactItem(
                               Icons.phone_outlined,
                               '+1 234 567 8900',
+                              isDark,
                             ),
                           ],
                         ),
@@ -224,7 +236,7 @@ class AboutScreen extends StatelessWidget {
                             : '© 2024 All Rights Reserved',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade500,
+                          color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -239,7 +251,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureItem(String text) {
+  Widget _buildFeatureItem(String text, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -258,7 +270,7 @@ class AboutScreen extends StatelessWidget {
               text,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade700,
+                color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
               ),
             ),
           ),
@@ -267,24 +279,24 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactItem(IconData icon, String text) {
+  Widget _buildContactItem(IconData icon, String text, bool isDark) {
     return Row(
       children: [
         Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
+            color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: const Color(0xFF1A1A1A), size: 20),
+          child: Icon(icon, color: isDark ? Colors.white : const Color(0xFF1A1A1A), size: 20),
         ),
         const SizedBox(width: 12),
         Text(
           text,
           style: TextStyle(
             fontSize: 14,
-            color: Colors.grey.shade700,
+            color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
           ),
         ),
       ],

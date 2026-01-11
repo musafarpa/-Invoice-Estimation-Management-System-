@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../../providers/auth_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../main_navigation.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,7 +15,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   late AnimationController _animationController;
@@ -60,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _animationController.dispose();
     _floatingController.dispose();
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.login(
-        _emailController.text.trim(),
+        _usernameController.text.trim(),
         _passwordController.text,
       );
 
@@ -85,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         );
       } else if (mounted) {
+        final errorMsg = authProvider.errorMessage ?? 'Invalid credentials';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -98,7 +100,9 @@ class _LoginScreenState extends State<LoginScreen>
                   child: const Icon(Icons.error_outline, color: Colors.white, size: 18),
                 ),
                 const SizedBox(width: 12),
-                const Text('Invalid credentials', style: TextStyle(fontWeight: FontWeight.w500)),
+                Expanded(
+                  child: Text(errorMsg, style: const TextStyle(fontWeight: FontWeight.w500)),
+                ),
               ],
             ),
             backgroundColor: const Color(0xFFE53935),
@@ -111,10 +115,10 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  void _selectAccount(int index, String email, String password) {
+  void _selectAccount(int index, String username, String password) {
     setState(() {
       _selectedAccount = index;
-      _emailController.text = email;
+      _usernameController.text = username;
       _passwordController.text = password;
     });
   }
@@ -122,6 +126,8 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
 
     return Scaffold(
       body: Stack(
@@ -129,15 +135,21 @@ class _LoginScreenState extends State<LoginScreen>
           // Background
           Container(
             height: size.height,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFF8FFF8),
-                  Color(0xFFFFFFFF),
-                  Color(0xFFF5F7F5),
-                ],
+                colors: isDark
+                    ? [
+                        const Color(0xFF1A1A1A),
+                        const Color(0xFF121212),
+                        const Color(0xFF0D0D0D),
+                      ]
+                    : [
+                        const Color(0xFFF8FFF8),
+                        const Color(0xFFFFFFFF),
+                        const Color(0xFFF5F7F5),
+                      ],
               ),
             ),
           ),
@@ -245,22 +257,22 @@ class _LoginScreenState extends State<LoginScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Welcome',
                                 style: TextStyle(
                                   fontSize: 36,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1A1A1A),
+                                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                                   letterSpacing: -1,
                                   height: 1.1,
                                 ),
                               ),
-                              const Text(
+                              Text(
                                 'Back!',
                                 style: TextStyle(
                                   fontSize: 36,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1A1A1A),
+                                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                                   letterSpacing: -1,
                                   height: 1.1,
                                 ),
@@ -270,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 'Sign in to continue managing your business',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  color: Colors.grey.shade600,
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -294,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade500,
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -307,9 +319,10 @@ class _LoginScreenState extends State<LoginScreen>
                                       icon: Icons.admin_panel_settings_rounded,
                                       title: 'Admin',
                                       subtitle: 'Full access',
-                                      email: 'admin@invoice.com',
-                                      password: 'admin123',
+                                      username: 'admin',
+                                      password: '3210',
                                       color: const Color(0xFF6366F1),
+                                      isDark: isDark,
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -319,9 +332,10 @@ class _LoginScreenState extends State<LoginScreen>
                                       icon: Icons.person_rounded,
                                       title: 'User',
                                       subtitle: 'Limited access',
-                                      email: 'user@invoice.com',
+                                      username: 'user',
                                       password: 'user123',
                                       color: const Color(0xFF10B981),
+                                      isDark: isDark,
                                     ),
                                   ),
                                 ],
@@ -340,19 +354,19 @@ class _LoginScreenState extends State<LoginScreen>
                           opacity: _fadeAnimation,
                           child: Row(
                             children: [
-                              Expanded(child: Divider(color: Colors.grey.shade300)),
+                              Expanded(child: Divider(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300)),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
                                 child: Text(
-                                  'or sign in with email',
+                                  'or sign in manually',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey.shade500,
+                                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
-                              Expanded(child: Divider(color: Colors.grey.shade300)),
+                              Expanded(child: Divider(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300)),
                             ],
                           ),
                         ),
@@ -368,45 +382,46 @@ class _LoginScreenState extends State<LoginScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Email Field
+                              // Username Field
                               Text(
-                                'Email',
+                                'Username',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade700,
+                                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.grey.shade200),
+                                  border: Border.all(color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.04),
+                                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
                                 child: TextFormField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  style: const TextStyle(
+                                  controller: _usernameController,
+                                  keyboardType: TextInputType.text,
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
+                                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                                   ),
                                   decoration: InputDecoration(
-                                    hintText: 'Enter your email',
+                                    hintText: 'Enter your username',
                                     hintStyle: TextStyle(
-                                      color: Colors.grey.shade400,
+                                      color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                                       fontWeight: FontWeight.w400,
                                     ),
                                     prefixIcon: Icon(
-                                      Icons.mail_outline_rounded,
-                                      color: Colors.grey.shade400,
+                                      Icons.person_outline_rounded,
+                                      color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
                                       size: 22,
                                     ),
                                     border: InputBorder.none,
@@ -417,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter your email';
+                                      return 'Please enter your username';
                                     }
                                     return null;
                                   },
@@ -432,18 +447,18 @@ class _LoginScreenState extends State<LoginScreen>
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade700,
+                                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.grey.shade200),
+                                  border: Border.all(color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.04),
+                                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -452,19 +467,20 @@ class _LoginScreenState extends State<LoginScreen>
                                 child: TextFormField(
                                   controller: _passwordController,
                                   obscureText: _obscurePassword,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
+                                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                                   ),
                                   decoration: InputDecoration(
                                     hintText: 'Enter your password',
                                     hintStyle: TextStyle(
-                                      color: Colors.grey.shade400,
+                                      color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                                       fontWeight: FontWeight.w400,
                                     ),
                                     prefixIcon: Icon(
                                       Icons.lock_outline_rounded,
-                                      color: Colors.grey.shade400,
+                                      color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
                                       size: 22,
                                     ),
                                     suffixIcon: IconButton(
@@ -472,7 +488,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         _obscurePassword
                                             ? Icons.visibility_off_outlined
                                             : Icons.visibility_outlined,
-                                        color: Colors.grey.shade400,
+                                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
                                         size: 22,
                                       ),
                                       onPressed: () {
@@ -511,7 +527,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   child: Text(
                                     'Forgot Password?',
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
+                                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -530,11 +546,13 @@ class _LoginScreenState extends State<LoginScreen>
                                       width: double.infinity,
                                       height: 58,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF1A1A1A),
+                                        color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
                                         borderRadius: BorderRadius.circular(16),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: const Color(0xFF1A1A1A).withValues(alpha: 0.3),
+                                            color: isDark
+                                                ? const Color(0xFFE8F959).withValues(alpha: 0.3)
+                                                : const Color(0xFF1A1A1A).withValues(alpha: 0.3),
                                             blurRadius: 20,
                                             offset: const Offset(0, 10),
                                           ),
@@ -542,15 +560,15 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                       child: Center(
                                         child: auth.isLoading
-                                            ? const SizedBox(
+                                            ? SizedBox(
                                                 width: 24,
                                                 height: 24,
                                                 child: CircularProgressIndicator(
-                                                  color: Colors.white,
+                                                  color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                                                   strokeWidth: 2.5,
                                                 ),
                                               )
-                                            : const Row(
+                                            : Row(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
@@ -558,14 +576,14 @@ class _LoginScreenState extends State<LoginScreen>
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       fontWeight: FontWeight.w600,
-                                                      color: Colors.white,
+                                                      color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                                                       letterSpacing: 0.3,
                                                     ),
                                                   ),
-                                                  SizedBox(width: 8),
+                                                  const SizedBox(width: 8),
                                                   Icon(
                                                     Icons.arrow_forward_rounded,
-                                                    color: Colors.white,
+                                                    color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                                                     size: 20,
                                                   ),
                                                 ],
@@ -590,7 +608,7 @@ class _LoginScreenState extends State<LoginScreen>
                             'Invoice & Estimation Manager v1.0',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade400,
+                              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                             ),
                           ),
                         ),
@@ -613,29 +631,32 @@ class _LoginScreenState extends State<LoginScreen>
     required IconData icon,
     required String title,
     required String subtitle,
-    required String email,
+    required String username,
     required String password,
     required Color color,
+    bool isDark = false,
   }) {
     final isSelected = _selectedAccount == index;
 
     return GestureDetector(
-      onTap: () => _selectAccount(index, email, password),
+      onTap: () => _selectAccount(index, username, password),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
+          color: isSelected
+              ? color.withValues(alpha: 0.1)
+              : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : Colors.grey.shade200,
+            color: isSelected ? color : (isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected
                   ? color.withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: 0.04),
+                  : Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
               blurRadius: isSelected ? 15 : 10,
               offset: const Offset(0, 4),
             ),
@@ -658,7 +679,7 @@ class _LoginScreenState extends State<LoginScreen>
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? color : const Color(0xFF1A1A1A),
+                color: isSelected ? color : (isDark ? Colors.white : const Color(0xFF1A1A1A)),
               ),
             ),
             const SizedBox(height: 2),
@@ -666,7 +687,7 @@ class _LoginScreenState extends State<LoginScreen>
               subtitle,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.grey.shade500,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
               ),
             ),
             if (isSelected) ...[

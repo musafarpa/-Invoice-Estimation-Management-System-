@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
@@ -8,11 +9,13 @@ class HelpSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
 
     return Directionality(
       textDirection: langProvider.isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7F5),
+        backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
         body: SafeArea(
           child: Column(
             children: [
@@ -27,28 +30,28 @@ class HelpSupportScreen extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                               blurRadius: 10,
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Text(
                       langProvider.helpSupport,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                       ),
                     ),
                   ],
@@ -66,10 +69,10 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'الأسئلة الشائعة'
                             : 'Frequently Asked Questions',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -81,6 +84,7 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'انتقل إلى علامة التبويب "الفواتير" واضغط على زر "+" في الزاوية العلوية. املأ تفاصيل العميل وأضف العناصر وحدد تاريخ الاستحقاق.'
                             : 'Go to the "Invoices" tab and tap the "+" button in the top corner. Fill in the client details, add items, and set the due date.',
+                        isDark,
                       ),
                       _buildFAQItem(
                         context,
@@ -90,6 +94,7 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'افتح التقدير واضغط على قائمة الخيارات (⋮) ثم اختر "تحويل إلى فاتورة". سيتم إنشاء فاتورة جديدة بنفس التفاصيل.'
                             : 'Open the estimation and tap the options menu (⋮), then select "Convert to Invoice". A new invoice will be created with the same details.',
+                        isDark,
                       ),
                       _buildFAQItem(
                         context,
@@ -99,6 +104,7 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'انتقل إلى الملف الشخصي > الإعدادات > اللغة واختر اللغة المفضلة لديك (الإنجليزية أو العربية).'
                             : 'Go to Profile > Settings > Language and select your preferred language (English or Arabic).',
+                        isDark,
                       ),
                       _buildFAQItem(
                         context,
@@ -108,6 +114,7 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'يمكن للمسؤولين فقط إضافة مستخدمين جدد. انتقل إلى الصفحة الرئيسية > إدارة المستخدمين واضغط على زر "+".'
                             : 'Only administrators can add new users. Go to Home > User Management and tap the "+" button.',
+                        isDark,
                       ),
                       const SizedBox(height: 32),
 
@@ -116,10 +123,10 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'تواصل معنا'
                             : 'Contact Support',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -131,6 +138,7 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'أرسل لنا بريدًا إلكترونيًا وسنرد خلال 24 ساعة'
                             : 'Send us an email and we\'ll respond within 24 hours',
+                        isDark,
                       ),
                       const SizedBox(height: 12),
                       _buildContactCard(
@@ -141,6 +149,7 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'متاح من 9 صباحًا إلى 6 مساءً'
                             : 'Available 9 AM - 6 PM',
+                        isDark,
                       ),
                       const SizedBox(height: 12),
                       _buildContactCard(
@@ -151,6 +160,7 @@ class HelpSupportScreen extends StatelessWidget {
                         langProvider.isArabic
                             ? 'متاح من 9 صباحًا إلى 6 مساءً'
                             : 'Available 9 AM - 6 PM',
+                        isDark,
                       ),
                       const SizedBox(height: 32),
 
@@ -231,15 +241,15 @@ class HelpSupportScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFAQItem(BuildContext context, String question, String answer) {
+  Widget _buildFAQItem(BuildContext context, String question, String answer, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -252,10 +262,10 @@ class HelpSupportScreen extends StatelessWidget {
         ),
         title: Text(
           question,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: isDark ? Colors.white : const Color(0xFF1A1A1A),
           ),
         ),
         children: [
@@ -263,7 +273,7 @@ class HelpSupportScreen extends StatelessWidget {
             answer,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey.shade700,
+              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
               height: 1.5,
             ),
           ),
@@ -278,15 +288,16 @@ class HelpSupportScreen extends StatelessWidget {
     String title,
     String subtitle,
     String description,
+    bool isDark,
   ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -297,10 +308,10 @@ class HelpSupportScreen extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
+              color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: const Color(0xFF1A1A1A)),
+            child: Icon(icon, color: isDark ? Colors.white : const Color(0xFF1A1A1A)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -309,34 +320,34 @@ class HelpSupportScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF1A1A1A),
+                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                   ),
                 ),
                 Text(
                   description,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade500,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.arrow_forward_ios,
             size: 16,
-            color: Colors.grey,
+            color: isDark ? Colors.grey.shade500 : Colors.grey,
           ),
         ],
       ),

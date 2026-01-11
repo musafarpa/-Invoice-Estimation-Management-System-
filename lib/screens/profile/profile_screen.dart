@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../auth/login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'terms_conditions_screen.dart';
@@ -16,13 +17,15 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final user = authProvider.currentUser;
     final isRTL = langProvider.isRTL;
+    final isDark = themeProvider.isDarkMode;
 
     return Directionality(
       textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7F5),
+        backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -38,28 +41,28 @@ class ProfileScreen extends StatelessWidget {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
+                                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                                 blurRadius: 10,
                               ),
                             ],
                           ),
                           child: Icon(
                             isRTL ? Icons.arrow_forward : Icons.arrow_back,
-                            color: const Color(0xFF1A1A1A),
+                            color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                           ),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Text(
                         langProvider.profile,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                     ],
@@ -167,6 +170,7 @@ class ProfileScreen extends StatelessWidget {
                           child: const Icon(
                             Icons.edit_outlined,
                             size: 20,
+                            color: Color(0xFF1A1A1A),
                           ),
                         ),
                       ),
@@ -176,23 +180,27 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // Settings Section
-                _buildSectionTitle(langProvider.settings),
+                _buildSectionTitle(langProvider.settings, isDark: isDark),
                 const SizedBox(height: 12),
 
                 // Language Toggle
                 _buildSettingsCard(
                   context,
+                  isDark: isDark,
                   children: [
-                    _buildLanguageToggle(context, langProvider),
-                    const Divider(height: 1, indent: 70, endIndent: 16, color: Color(0xFFEEEEEE)),
+                    _buildLanguageToggle(context, langProvider, isDark),
+                    Divider(height: 1, indent: 70, endIndent: 16, color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFEEEEEE)),
+                    _buildThemeToggle(context, themeProvider, langProvider, isDark),
+                    Divider(height: 1, indent: 70, endIndent: 16, color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFEEEEEE)),
                     _buildSettingsItem(
                       icon: Icons.notifications_outlined,
                       title: langProvider.notifications,
+                      isDark: isDark,
                       trailing: Switch(
                         value: true,
                         onChanged: (value) {},
-                        activeColor: const Color(0xFF1A1A1A),
-                        activeTrackColor: const Color(0xFFE8F959),
+                        activeThumbColor: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                        activeTrackColor: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE8F959),
                       ),
                     ),
                   ],
@@ -200,17 +208,19 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Account Section
-                _buildSectionTitle(isRTL ? 'الحساب' : 'Account'),
+                _buildSectionTitle(isRTL ? 'الحساب' : 'Account', isDark: isDark),
                 const SizedBox(height: 12),
 
                 _buildSettingsCard(
                   context,
+                  isDark: isDark,
                   children: [
                     _buildSettingsItem(
                       icon: Icons.person_outline,
                       title: langProvider.editProfile,
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -220,12 +230,13 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const Divider(height: 1, indent: 70, endIndent: 16, color: Color(0xFFEEEEEE)),
+                    Divider(height: 1, indent: 70, endIndent: 16, color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFEEEEEE)),
                     _buildSettingsItem(
                       icon: Icons.lock_outline,
                       title: isRTL ? 'تغيير كلمة المرور' : 'Change Password',
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         _showChangePasswordDialog(context, langProvider);
                       },
@@ -235,17 +246,19 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Support Section
-                _buildSectionTitle(isRTL ? 'الدعم' : 'Support'),
+                _buildSectionTitle(isRTL ? 'الدعم' : 'Support', isDark: isDark),
                 const SizedBox(height: 12),
 
                 _buildSettingsCard(
                   context,
+                  isDark: isDark,
                   children: [
                     _buildSettingsItem(
                       icon: Icons.help_outline,
                       title: langProvider.helpSupport,
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -255,12 +268,13 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const Divider(height: 1, indent: 70, endIndent: 16, color: Color(0xFFEEEEEE)),
+                    Divider(height: 1, indent: 70, endIndent: 16, color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFEEEEEE)),
                     _buildSettingsItem(
                       icon: Icons.description_outlined,
                       title: langProvider.termsConditions,
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -270,12 +284,13 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const Divider(height: 1, indent: 70, endIndent: 16, color: Color(0xFFEEEEEE)),
+                    Divider(height: 1, indent: 70, endIndent: 16, color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFEEEEEE)),
                     _buildSettingsItem(
                       icon: Icons.privacy_tip_outlined,
                       title: langProvider.privacyPolicy,
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -285,12 +300,13 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const Divider(height: 1, indent: 70, endIndent: 16, color: Color(0xFFEEEEEE)),
+                    Divider(height: 1, indent: 70, endIndent: 16, color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFEEEEEE)),
                     _buildSettingsItem(
                       icon: Icons.info_outline,
                       title: langProvider.aboutUs,
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -305,17 +321,19 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // More Section
-                _buildSectionTitle(isRTL ? 'المزيد' : 'More'),
+                _buildSectionTitle(isRTL ? 'المزيد' : 'More', isDark: isDark),
                 const SizedBox(height: 12),
 
                 _buildSettingsCard(
                   context,
+                  isDark: isDark,
                   children: [
                     _buildSettingsItem(
                       icon: Icons.star_outline,
                       title: langProvider.rateApp,
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -328,12 +346,13 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const Divider(height: 1, indent: 70, endIndent: 16, color: Color(0xFFEEEEEE)),
+                    Divider(height: 1, indent: 70, endIndent: 16, color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFEEEEEE)),
                     _buildSettingsItem(
                       icon: Icons.share_outlined,
                       title: langProvider.shareApp,
                       showArrow: true,
                       isRTL: isRTL,
+                      isDark: isDark,
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -361,7 +380,7 @@ class ProfileScreen extends StatelessWidget {
                         _showLogoutDialog(context, authProvider, langProvider);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade50,
+                        backgroundColor: isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50,
                         foregroundColor: Colors.red,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -404,32 +423,32 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, {bool isDark = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1A1A1A),
+            color: isDark ? Colors.white : const Color(0xFF1A1A1A),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSettingsCard(BuildContext context, {required List<Widget> children}) {
+  Widget _buildSettingsCard(BuildContext context, {required List<Widget> children, bool isDark = false}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -445,6 +464,7 @@ class ProfileScreen extends StatelessWidget {
     VoidCallback? onTap,
     bool showArrow = false,
     bool isRTL = false,
+    bool isDark = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -457,18 +477,19 @@ class ProfileScreen extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: const Color(0xFF1A1A1A), size: 22),
+              child: Icon(icon, color: isDark ? Colors.white : const Color(0xFF1A1A1A), size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                 ),
               ),
             ),
@@ -477,7 +498,7 @@ class ProfileScreen extends StatelessWidget {
               Icon(
                 Icons.chevron_right,
                 size: 24,
-                color: Colors.grey.shade400,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
               ),
           ],
         ),
@@ -485,7 +506,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLanguageToggle(BuildContext context, LanguageProvider langProvider) {
+  Widget _buildLanguageToggle(BuildContext context, LanguageProvider langProvider, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -494,18 +515,19 @@ class ProfileScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
+              color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.language, color: Color(0xFF1A1A1A), size: 22),
+            child: Icon(Icons.language, color: isDark ? Colors.white : const Color(0xFF1A1A1A), size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               langProvider.language,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
               ),
             ),
           ),
@@ -520,7 +542,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 100,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
+                  color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFF1A1A1A),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Stack(
@@ -550,7 +572,7 @@ class ProfileScreen extends StatelessWidget {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: langProvider.isArabic
-                                    ? Colors.white
+                                    ? (isDark ? Colors.grey.shade500 : Colors.white)
                                     : const Color(0xFF1A1A1A),
                               ),
                             ),
@@ -565,8 +587,100 @@ class ProfileScreen extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                                 color: langProvider.isArabic
                                     ? const Color(0xFF1A1A1A)
-                                    : Colors.white,
+                                    : (isDark ? Colors.grey.shade500 : Colors.white),
                               ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeToggle(BuildContext context, ThemeProvider themeProvider, LanguageProvider langProvider, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              isDark ? Icons.dark_mode : Icons.light_mode,
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              langProvider.isArabic ? 'المظهر' : 'Theme',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+              ),
+            ),
+          ),
+          // Theme Toggle
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: GestureDetector(
+              onTap: () {
+                themeProvider.toggleTheme();
+              },
+              child: Container(
+                width: 100,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFF1A1A1A),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Stack(
+                  children: [
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      left: isDark ? 50 : 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 50,
+                        margin: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F959),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Icon(
+                              Icons.light_mode,
+                              size: 18,
+                              color: isDark ? Colors.grey.shade500 : const Color(0xFF1A1A1A),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Icon(
+                              Icons.dark_mode,
+                              size: 18,
+                              color: isDark ? const Color(0xFF1A1A1A) : Colors.grey.shade400,
                             ),
                           ),
                         ),

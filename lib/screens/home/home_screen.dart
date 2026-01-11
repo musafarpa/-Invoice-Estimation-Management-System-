@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import '../../providers/auth_provider.dart';
+import '../../providers/company_provider.dart';
 import '../../providers/estimation_provider.dart';
 import '../../providers/invoice_provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../auth/login_screen.dart';
+import '../company/company_list_screen.dart';
 import '../user_management/user_list_screen.dart';
 import '../profile/profile_screen.dart';
 
@@ -15,15 +18,18 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final companyProvider = Provider.of<CompanyProvider>(context);
     final estimationProvider = Provider.of<EstimationProvider>(context);
     final invoiceProvider = Provider.of<InvoiceProvider>(context);
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final currencyFormat = NumberFormat.currency(symbol: 'SAR ', decimalDigits: 2);
+    final isDark = themeProvider.isDarkMode;
 
     return Directionality(
       textDirection: langProvider.isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-      backgroundColor: const Color(0xFFF5F7F5),
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -65,10 +71,10 @@ class HomeScreen extends StatelessWidget {
                               langProvider.isRTL
                                   ? '${authProvider.currentUser?.name ?? 'المستخدم'}، مرحباً!'
                                   : 'Hi, ${authProvider.currentUser?.name ?? 'User'}!',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A1A1A),
+                                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                               ),
                             ),
                             Text(
@@ -77,7 +83,7 @@ class HomeScreen extends StatelessWidget {
                                   : (authProvider.isSuperAdmin ? 'Super Admin' : 'User'),
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                               ),
                             ),
                           ],
@@ -91,11 +97,11 @@ class HomeScreen extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                               blurRadius: 10,
                             ),
                           ],
@@ -103,7 +109,7 @@ class HomeScreen extends StatelessWidget {
                         child: IconButton(
                           icon: const Icon(Icons.notifications_outlined),
                           onPressed: () {},
-                          color: const Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -111,11 +117,11 @@ class HomeScreen extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                               blurRadius: 10,
                             ),
                           ],
@@ -130,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                             );
                           },
-                          color: const Color(0xFF1A1A1A),
+                          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                         ),
                       ),
                     ],
@@ -245,12 +251,12 @@ class HomeScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Latest Transactions',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                     ),
                   ),
                   TextButton(
@@ -258,7 +264,7 @@ class HomeScreen extends StatelessWidget {
                     child: Text(
                       'See All',
                       style: TextStyle(
-                        color: Colors.grey.shade600,
+                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -272,17 +278,18 @@ class HomeScreen extends StatelessWidget {
                       time: _getTimeAgo(invoice.createdAt),
                       amount: '-${currencyFormat.format(invoice.totalAmount)}',
                       isExpense: true,
+                      isDark: isDark,
                     ),
                   ),
               const SizedBox(height: 24),
 
               // Currency Section
-              const Text(
+              Text(
                 'Currency',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
+                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                 ),
               ),
               const SizedBox(height: 12),
@@ -294,6 +301,7 @@ class HomeScreen extends StatelessWidget {
                       name: 'Euro',
                       rate: '0.97',
                       color: Colors.blue,
+                      isDark: isDark,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -303,6 +311,7 @@ class HomeScreen extends StatelessWidget {
                       name: 'British pound',
                       rate: '0.82',
                       color: Colors.purple,
+                      isDark: isDark,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -310,23 +319,23 @@ class HomeScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A1A1A),
+                        color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
                           Icon(
                             Icons.add,
-                            color: Colors.white,
+                            color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                             size: 24,
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Text(
                             'Add\nCurrency',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.white,
+                              color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -347,6 +356,7 @@ class HomeScreen extends StatelessWidget {
                       value: estimationProvider.estimations.length.toString(),
                       subtitle: '${estimationProvider.pendingCount} pending',
                       color: Colors.orange,
+                      isDark: isDark,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -356,83 +366,153 @@ class HomeScreen extends StatelessWidget {
                       value: invoiceProvider.invoices.length.toString(),
                       subtitle: '${invoiceProvider.unpaidCount} unpaid',
                       color: Colors.blue,
+                      isDark: isDark,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // Admin Section
-              if (authProvider.isSuperAdmin) ...[
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const UserListScreen(),
+              // Company Section
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CompanyListScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                        blurRadius: 10,
                       ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F959).withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Colors.purple.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.people_outline,
-                            color: Colors.purple.shade400,
-                          ),
+                        child: const Icon(
+                          Icons.business,
+                          color: Color(0xFF1A1A1A),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'User Management',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Companies',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                               ),
-                              Text(
-                                '${authProvider.allUsers.length} users registered',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade600,
-                                ),
+                            ),
+                            Text(
+                              '${companyProvider.companyCount} companies registered',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                          color: Colors.grey.shade400,
-                        ),
-                      ],
-                    ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
+              const SizedBox(height: 16),
+
+              // Users Section
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const UserListScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.purple.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.people_outline,
+                          color: Colors.purple.shade400,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Users',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            Text(
+                              'Manage users',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 100),
             ],
           ),
@@ -483,16 +563,17 @@ class HomeScreen extends StatelessWidget {
     required String time,
     required String amount,
     required bool isExpense,
+    bool isDark = false,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -503,12 +584,12 @@ class HomeScreen extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.store,
-              color: Color(0xFF1A1A1A),
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
               size: 20,
             ),
           ),
@@ -519,16 +600,17 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
+                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                   ),
                 ),
                 Text(
                   time,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade500,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                   ),
                 ),
               ],
@@ -552,15 +634,16 @@ class HomeScreen extends StatelessWidget {
     required String name,
     required String rate,
     required Color color,
+    bool isDark = false,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -590,15 +673,16 @@ class HomeScreen extends StatelessWidget {
             name,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.grey.shade600,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             rate,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
             ),
           ),
         ],
@@ -611,15 +695,16 @@ class HomeScreen extends StatelessWidget {
     required String value,
     required String subtitle,
     required Color color,
+    bool isDark = false,
   }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -642,7 +727,7 @@ class HomeScreen extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey.shade600,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                 ),
               ),
             ],
@@ -650,9 +735,10 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
             ),
           ),
           const SizedBox(height: 4),
@@ -660,7 +746,7 @@ class HomeScreen extends StatelessWidget {
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade500,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
             ),
           ),
         ],

@@ -36,4 +36,46 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Handle role from API (SUPERADMIN, ADMIN, USER, etc.)
+    String role = 'user';
+    if (json['role'] != null) {
+      final apiRole = json['role'].toString().toUpperCase();
+      if (apiRole == 'SUPERADMIN' || apiRole == 'SUPER_ADMIN') {
+        role = 'super_admin';
+      } else if (apiRole == 'ADMIN') {
+        role = 'admin';
+      } else {
+        role = apiRole.toLowerCase();
+      }
+    } else if (json['is_superuser'] == true) {
+      role = 'super_admin';
+    } else if (json['is_staff'] == true) {
+      role = 'admin';
+    }
+
+    return UserModel(
+      id: json['id']?.toString() ?? '',
+      name: json['username'] ?? json['name'] ?? '',
+      email: json['email'] ?? '',
+      password: '',
+      role: role,
+      avatar: json['avatar'],
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': name,
+      'email': email,
+      'role': role,
+      'avatar': avatar,
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
 }

@@ -3,24 +3,32 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import '../../providers/invoice_provider.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../models/invoice_model.dart';
 import 'invoice_detail_screen.dart';
 import 'invoice_form_screen.dart';
 
-class InvoiceListScreen extends StatelessWidget {
+class InvoiceListScreen extends StatefulWidget {
   const InvoiceListScreen({super.key});
 
+  @override
+  State<InvoiceListScreen> createState() => _InvoiceListScreenState();
+}
+
+class _InvoiceListScreenState extends State<InvoiceListScreen> {
   @override
   Widget build(BuildContext context) {
     final invoiceProvider = Provider.of<InvoiceProvider>(context);
     final langProvider = Provider.of<LanguageProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final currencyFormat = NumberFormat.currency(symbol: 'SAR ', decimalDigits: 2);
     final isRTL = langProvider.isRTL;
+    final isDark = themeProvider.isDarkMode;
 
     return Directionality(
       textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7F5),
+        backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F5),
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,40 +40,80 @@ class InvoiceListScreen extends StatelessWidget {
                   children: [
                     Text(
                       isRTL ? 'الفواتير' : 'Invoices',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const InvoiceFormScreen(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8F959),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFE8F959).withValues(alpha: 0.4),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                    Row(
+                      children: [
+                        // Reload Button
+                        GestureDetector(
+                          onTap: () => invoiceProvider.fetchInvoices(),
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
+                            child: invoiceProvider.isLoading
+                                ? Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: CircularProgressIndicator(
+                                      color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.refresh,
+                                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                                  ),
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Color(0xFF1A1A1A),
+                        const SizedBox(width: 12),
+                        // Add Button
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const InvoiceFormScreen(),
+                              ),
+                            );
+                            if (result == true && mounted) {
+                              invoiceProvider.fetchInvoices();
+                            }
+                          },
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F959),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFE8F959).withValues(alpha: 0.4),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              color: Color(0xFF1A1A1A),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -81,24 +129,28 @@ class InvoiceListScreen extends StatelessWidget {
                         isRTL ? 'الكل' : 'All',
                         invoiceProvider.invoices.length.toString(),
                         isSelected: true,
+                        isDark: isDark,
                       ),
                       const SizedBox(width: 8),
                       _buildStatChip(
                         isRTL ? 'غير مدفوع' : 'Unpaid',
                         invoiceProvider.unpaidCount.toString(),
                         color: Colors.orange,
+                        isDark: isDark,
                       ),
                       const SizedBox(width: 8),
                       _buildStatChip(
                         isRTL ? 'مدفوع' : 'Paid',
                         invoiceProvider.paidCount.toString(),
                         color: Colors.green,
+                        isDark: isDark,
                       ),
                       const SizedBox(width: 8),
                       _buildStatChip(
                         isRTL ? 'متأخر' : 'Overdue',
                         invoiceProvider.overdueCount.toString(),
                         color: Colors.red,
+                        isDark: isDark,
                       ),
                     ],
                   ),
@@ -107,40 +159,82 @@ class InvoiceListScreen extends StatelessWidget {
               const SizedBox(height: 20),
               // List
               Expanded(
-                child: invoiceProvider.invoices.isEmpty
+                child: invoiceProvider.isLoading && invoiceProvider.invoices.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              size: 64,
-                              color: Colors.grey.shade300,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              isRTL ? 'لا توجد فواتير بعد' : 'No invoices yet',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                          ],
+                        child: CircularProgressIndicator(
+                          color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
                         ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: invoiceProvider.invoices.length,
-                        itemBuilder: (context, index) {
-                          final invoice = invoiceProvider.invoices[index];
-                          return _buildInvoiceCard(
-                            context,
-                            invoice,
-                            currencyFormat,
-                            isRTL,
-                          );
-                        },
-                      ),
+                    : invoiceProvider.errorMessage != null && invoiceProvider.invoices.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  size: 64,
+                                  color: Colors.red.shade300,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  invoiceProvider.errorMessage!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.red.shade500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () => invoiceProvider.fetchInvoices(),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                                    foregroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+                                  ),
+                                  child: Text(isRTL ? 'إعادة المحاولة' : 'Retry'),
+                                ),
+                              ],
+                            ),
+                          )
+                        : invoiceProvider.invoices.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.receipt_long_outlined,
+                                      size: 64,
+                                      color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      isRTL ? 'لا توجد فواتير بعد' : 'No invoices yet',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : RefreshIndicator(
+                                onRefresh: () => invoiceProvider.fetchInvoices(),
+                                color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  itemCount: invoiceProvider.invoices.length,
+                                  itemBuilder: (context, index) {
+                                    final invoice = invoiceProvider.invoices[index];
+                                    return _buildInvoiceCard(
+                                      context,
+                                      invoice,
+                                      currencyFormat,
+                                      isRTL,
+                                      isDark: isDark,
+                                    );
+                                  },
+                                ),
+                              ),
               ),
             ],
           ),
@@ -149,15 +243,17 @@ class InvoiceListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatChip(String label, String count, {bool isSelected = false, Color? color}) {
+  Widget _buildStatChip(String label, String count, {bool isSelected = false, Color? color, bool isDark = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF1A1A1A) : Colors.white,
+        color: isSelected
+            ? (isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A))
+            : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
           ),
         ],
@@ -169,14 +265,18 @@ class InvoiceListScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : Colors.grey.shade600,
+              color: isSelected
+                  ? (isDark ? const Color(0xFF1A1A1A) : Colors.white)
+                  : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
             ),
           ),
           const SizedBox(width: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: color ?? (isSelected ? Colors.white : Colors.grey.shade200),
+              color: color ?? (isSelected
+                  ? (isDark ? const Color(0xFF1A1A1A) : Colors.white)
+                  : (isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade200)),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
@@ -184,7 +284,11 @@ class InvoiceListScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: color != null ? Colors.white : (isSelected ? const Color(0xFF1A1A1A) : Colors.grey.shade700),
+                color: color != null
+                    ? Colors.white
+                    : (isSelected
+                        ? (isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A))
+                        : (isDark ? Colors.grey.shade300 : Colors.grey.shade700)),
               ),
             ),
           ),
@@ -197,8 +301,9 @@ class InvoiceListScreen extends StatelessWidget {
     BuildContext context,
     InvoiceModel invoice,
     NumberFormat currencyFormat,
-    bool isRTL,
-  ) {
+    bool isRTL, {
+    bool isDark = false,
+  }) {
     Color statusColor;
     String statusText;
     switch (invoice.status) {
@@ -216,23 +321,28 @@ class InvoiceListScreen extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final provider = Provider.of<InvoiceProvider>(context, listen: false);
+        final result = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
             builder: (_) => InvoiceDetailScreen(invoice: invoice),
           ),
         );
+        // Refresh list if invoice was modified
+        if (result == true) {
+          provider.fetchInvoices();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
               blurRadius: 10,
             ),
           ],
@@ -250,12 +360,14 @@ class InvoiceListScreen extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.1),
+                          color: statusColor.withValues(alpha: isDark ? 0.2 : 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(
                           child: Text(
-                            invoice.clientName[0].toUpperCase(),
+                            invoice.clientName.isNotEmpty
+                                ? invoice.clientName[0].toUpperCase()
+                                : '?',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -271,9 +383,10 @@ class InvoiceListScreen extends StatelessWidget {
                           children: [
                             Text(
                               invoice.clientName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
+                                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -281,7 +394,7 @@ class InvoiceListScreen extends StatelessWidget {
                               invoice.invoiceNumber,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade500,
+                                color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                               ),
                             ),
                           ],
@@ -294,7 +407,7 @@ class InvoiceListScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
+                    color: statusColor.withValues(alpha: isDark ? 0.2 : 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -319,7 +432,7 @@ class InvoiceListScreen extends StatelessWidget {
                       isRTL ? 'تاريخ الاستحقاق' : 'Due Date',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey.shade500,
+                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                       ),
                     ),
                     Text(
@@ -327,17 +440,19 @@ class InvoiceListScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: invoice.status == 'overdue' ? Colors.red : null,
+                        color: invoice.status == 'overdue'
+                            ? Colors.red
+                            : (isDark ? Colors.white : const Color(0xFF1A1A1A)),
                       ),
                     ),
                   ],
                 ),
                 Text(
                   currencyFormat.format(invoice.totalAmount),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
+                    color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
                   ),
                 ),
               ],
