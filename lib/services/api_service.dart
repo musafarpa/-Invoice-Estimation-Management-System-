@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String _originalBaseUrl = 'https://invoice-ndds.onrender.com';
+  static const String _originalBaseUrl = 'http://43.199.253.222';
 
   // Timeout duration for API requests (Render free tier can be slow)
   static const Duration _timeout = Duration(seconds: 60);

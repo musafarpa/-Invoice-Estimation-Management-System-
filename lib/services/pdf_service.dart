@@ -355,6 +355,7 @@ class PdfService {
             deliveryNote: invoice.deliveryNote,
             poNumber: invoice.poNumber,
             attention: invoice.attention,
+            phoneNumber: invoice.phoneNumber,
             isInvoice: true,
           ),
           pw.SizedBox(height: 10),
@@ -468,6 +469,7 @@ class PdfService {
             deliveryNote: null,
             poNumber: estimation.poNumber,
             attention: estimation.attention,
+            phoneNumber: estimation.phoneNumber,
             isInvoice: false,
             validUntil: estimation.validUntil,
           ),
@@ -503,6 +505,7 @@ class PdfService {
             invoiceDate: estimation.createdAt,
             netAmount: netAmount,
             vatAmount: vatAmount,
+            showQrCode: false,
           ),
           pw.SizedBox(height: 10),
           _buildSignatureSection(),
@@ -764,6 +767,7 @@ class PdfService {
     String? deliveryNote,
     String? poNumber,
     String? attention,
+    String? phoneNumber,
     required bool isInvoice,
     DateTime? validUntil,
   }) {
@@ -789,6 +793,10 @@ class PdfService {
                   _buildInfoRow('Address', 'عنوان', clientAddress.isEmpty ? '-' : clientAddress),
                   pw.SizedBox(height: 3),
                   _buildInfoRow('Payment', 'الدفع', paymentMethod),
+                  if (phoneNumber != null && phoneNumber.isNotEmpty) ...[
+                    pw.SizedBox(height: 3),
+                    _buildInfoRow('Phone', 'رقم الهاتف', phoneNumber),
+                  ],
                   if (poNumber != null && poNumber.isNotEmpty) ...[
                     pw.SizedBox(height: 3),
                     _buildInfoRow('P.O No', 'رقم طلب الشراء', poNumber),
@@ -1187,6 +1195,7 @@ class PdfService {
     required double vatAmount,
     String? paymentQrCodeUrl,
     Uint8List? paymentQrImageBytes,
+    bool showQrCode = true,
   }) {
     // Generate fallback QR code with IBAN info if backend image not available
     pw.Widget qrWidget;
@@ -1274,7 +1283,7 @@ class PdfService {
       children: [
         // Bank Details
         pw.Expanded(
-          flex: 2,
+          flex: showQrCode ? 2 : 1,
           child: pw.Container(
             padding: const pw.EdgeInsets.all(6),
             decoration: pw.BoxDecoration(
@@ -1304,28 +1313,30 @@ class PdfService {
             ),
           ),
         ),
-        pw.SizedBox(width: 10),
-        // Payment QR Code
-        pw.Container(
-          width: 90,
-          child: pw.Column(
-            children: [
-              pw.Container(
-                width: 80,
-                height: 80,
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+        // Payment QR Code - only show for invoices
+        if (showQrCode) ...[
+          pw.SizedBox(width: 10),
+          pw.Container(
+            width: 90,
+            child: pw.Column(
+              children: [
+                pw.Container(
+                  width: 80,
+                  height: 80,
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+                  ),
+                  child: pw.Center(child: qrWidget),
                 ),
-                child: pw.Center(child: qrWidget),
-              ),
-              pw.SizedBox(height: 2),
-              pw.Text(
-                'Payment QR',
-                style: pw.TextStyle(fontSize: 6, font: _regularFont),
-              ),
-            ],
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'Payment QR',
+                  style: pw.TextStyle(fontSize: 6, font: _regularFont),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

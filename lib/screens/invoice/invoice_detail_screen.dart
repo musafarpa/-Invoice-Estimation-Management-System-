@@ -502,6 +502,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                               const SizedBox(height: 12),
                               _buildInfoRow(Icons.location_on_outlined, _invoice.clientAddress, isDark),
                             ],
+                            if (_invoice.phoneNumber != null && _invoice.phoneNumber!.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              _buildInfoRow(Icons.phone_android_outlined, '${isRTL ? 'رقم الهاتف' : 'Phone'}: ${_invoice.phoneNumber}', isDark),
+                            ],
                             if (_invoice.clientVatNumber != null && _invoice.clientVatNumber!.isNotEmpty) ...[
                               const SizedBox(height: 12),
                               _buildInfoRow(Icons.receipt_outlined, '${isRTL ? 'الرقم الضريبي' : 'VAT'}: ${_invoice.clientVatNumber}', isDark),
@@ -961,14 +965,28 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               ),
             ],
           ),
-          if (item.taxRate > 0) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${isRTL ? 'الضريبة' : 'Tax'}: ${item.taxRate}%',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
-              ),
+          // Show VAT amount per item
+          if (item.taxAmount > 0) ...[
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isRTL ? 'ضريبة القيمة المضافة' : 'VAT Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
+                  ),
+                ),
+                Text(
+                  currencyFormat.format(item.taxAmount),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.orange.shade300 : Colors.orange.shade700,
+                  ),
+                ),
+              ],
             ),
           ],
         ],

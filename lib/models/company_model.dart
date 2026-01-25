@@ -12,6 +12,9 @@ class CompanyModel {
   final String iban;
   final String contactPerson;
   final String contactNumber;
+  final String? contactNumber2;  // Contact Person 2
+  final String? swiftCode;       // Swift Code
+  final String? accountNumberSnb; // Account Number SNB
   final String? currency;
   final String? addressEn;
   final String? addressAr;
@@ -34,6 +37,9 @@ class CompanyModel {
     required this.iban,
     required this.contactPerson,
     required this.contactNumber,
+    this.contactNumber2,
+    this.swiftCode,
+    this.accountNumberSnb,
     this.currency,
     this.addressEn,
     this.addressAr,
@@ -58,6 +64,9 @@ class CompanyModel {
       iban: json['iban']?.toString() ?? '',
       contactPerson: json['contact_person']?.toString() ?? '',
       contactNumber: json['contact_number']?.toString() ?? '',
+      contactNumber2: json['contact_number2']?.toString(),
+      swiftCode: json['swift_code']?.toString(),
+      accountNumberSnb: json['account_number_snb']?.toString(),
       currency: json['currency']?.toString(),
       addressEn: json['address_en']?.toString(),
       addressAr: json['address_ar']?.toString(),
@@ -88,6 +97,15 @@ class CompanyModel {
     }
     if (subtitleAr != null && subtitleAr!.isNotEmpty) {
       json['subtitle_ar'] = subtitleAr;
+    }
+    if (contactNumber2 != null && contactNumber2!.isNotEmpty) {
+      json['contact_number2'] = contactNumber2;
+    }
+    if (swiftCode != null && swiftCode!.isNotEmpty) {
+      json['swift_code'] = swiftCode;
+    }
+    if (accountNumberSnb != null && accountNumberSnb!.isNotEmpty) {
+      json['account_number_snb'] = accountNumberSnb;
     }
     if (currency != null && currency!.isNotEmpty) {
       json['currency'] = currency;
@@ -125,6 +143,9 @@ class CompanyModel {
     String? iban,
     String? contactPerson,
     String? contactNumber,
+    String? contactNumber2,
+    String? swiftCode,
+    String? accountNumberSnb,
     String? currency,
     String? addressEn,
     String? addressAr,
@@ -147,6 +168,9 @@ class CompanyModel {
       iban: iban ?? this.iban,
       contactPerson: contactPerson ?? this.contactPerson,
       contactNumber: contactNumber ?? this.contactNumber,
+      contactNumber2: contactNumber2 ?? this.contactNumber2,
+      swiftCode: swiftCode ?? this.swiftCode,
+      accountNumberSnb: accountNumberSnb ?? this.accountNumberSnb,
       currency: currency ?? this.currency,
       addressEn: addressEn ?? this.addressEn,
       addressAr: addressAr ?? this.addressAr,

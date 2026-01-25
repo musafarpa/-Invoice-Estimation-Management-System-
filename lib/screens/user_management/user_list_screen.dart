@@ -456,193 +456,555 @@ class _UserListScreenState extends State<UserListScreen> {
     final passwordController = TextEditingController();
     String role = user?.role ?? 'user';
     bool isLoading = false;
+    bool obscurePassword = true;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(user != null ? 'Edit User' : 'Add User'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Username',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+        builder: (context, setState) {
+          // App theme color
+          const Color accentColor = Color(0xFFE8F959);
+
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxWidth: 400),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password${user != null ? ' (required for update)' : ''}',
-                    hintText: user != null ? 'Enter password to update' : 'Enter password',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: role,
-                  decoration: InputDecoration(
-                    labelText: 'Role',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  // Super admin can assign any role, admin can only assign 'user'
-                  items: isSuperAdmin
-                      ? const [
-                          DropdownMenuItem(value: 'user', child: Text('User')),
-                          DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                          DropdownMenuItem(value: 'super_admin', child: Text('Super Admin')),
-                        ]
-                      : const [
-                          DropdownMenuItem(value: 'user', child: Text('User')),
-                        ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        role = value;
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: isLoading ? null : () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      if (nameController.text.isEmpty ||
-                          emailController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Please fill username and email'),
-                            backgroundColor: Colors.red.shade400,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                        return;
-                      }
-
-                      // Password is required for both add and update (API requirement)
-                      if (passwordController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(user != null
-                                ? 'Password is required to update user'
-                                : 'Password is required for new users'),
-                            backgroundColor: Colors.red.shade400,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                        return;
-                      }
-
-                      setState(() {
-                        isLoading = true;
-                      });
-
-                      final authProvider =
-                          Provider.of<AuthProvider>(context, listen: false);
-
-                      bool success;
-                      if (user != null) {
-                        // Update existing user
-                        final updatedUser = UserModel(
-                          id: user.id,
-                          name: nameController.text.trim(),
-                          email: emailController.text.trim(),
-                          password: passwordController.text,
-                          role: role,
-                          createdAt: user.createdAt,
-                        );
-                        success = await authProvider.updateUser(updatedUser);
-                      } else {
-                        // Add new user
-                        final newUser = UserModel(
-                          id: '',
-                          name: nameController.text.trim(),
-                          email: emailController.text.trim(),
-                          password: passwordController.text,
-                          role: role,
-                          createdAt: DateTime.now(),
-                        );
-                        success = await authProvider.addUser(newUser);
-                      }
-
-                      setState(() {
-                        isLoading = false;
-                      });
-
-                      if (success) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(user != null ? 'User updated' : 'User added'),
-                            backgroundColor: Colors.green.shade400,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                ],
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header with dark theme
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1A1A1A),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          // Close button
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: GestureDetector(
+                              onTap: isLoading ? null : () => Navigator.pop(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white70,
+                                  size: 20,
+                                ),
+                              ),
                             ),
                           ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(authProvider.errorMessage ?? 'Operation failed'),
-                            backgroundColor: Colors.red.shade400,
-                            behavior: SnackBarBehavior.floating,
+                          // Avatar
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: accentColor,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accentColor.withValues(alpha: 0.4),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: nameController.text.isNotEmpty
+                                  ? Text(
+                                      nameController.text[0].toUpperCase(),
+                                      style: const TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1A1A1A),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.person_add,
+                                      size: 36,
+                                      color: Color(0xFF1A1A1A),
+                                    ),
+                            ),
                           ),
-                        );
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A1A1A),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                          const SizedBox(height: 12),
+                          Text(
+                            user != null ? 'Edit User' : 'Add New User',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            user != null ? 'Update user information' : 'Create a new user account',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Form Fields
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Username field
+                          Text(
+                            'Username',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: nameController,
+                              onChanged: (_) => setState(() {}),
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Enter username',
+                                hintStyle: TextStyle(
+                                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.person_outline,
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Email field
+                          Text(
+                            'Email',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Enter email address',
+                                hintStyle: TextStyle(
+                                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.email_outlined,
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Password field
+                          Text(
+                            user != null ? 'Password (required for update)' : 'Password',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: passwordController,
+                              obscureText: obscurePassword,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Enter password',
+                                hintStyle: TextStyle(
+                                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.lock_outline,
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                                ),
+                                suffixIcon: GestureDetector(
+                                  onTap: () => setState(() => obscurePassword = !obscurePassword),
+                                  child: Icon(
+                                    obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                                  ),
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // Role selector
+                          Text(
+                            'Select Role',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Role chips
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: [
+                              _buildRoleChipThemed(
+                                'user',
+                                'User',
+                                Icons.person,
+                                role == 'user',
+                                isDark,
+                                accentColor,
+                                () => setState(() => role = 'user'),
+                              ),
+                              if (isSuperAdmin) ...[
+                                _buildRoleChipThemed(
+                                  'admin',
+                                  'Admin',
+                                  Icons.admin_panel_settings,
+                                  role == 'admin',
+                                  isDark,
+                                  accentColor,
+                                  () => setState(() => role = 'admin'),
+                                ),
+                                _buildRoleChipThemed(
+                                  'super_admin',
+                                  'Super Admin',
+                                  Icons.shield,
+                                  role == 'super_admin',
+                                  isDark,
+                                  accentColor,
+                                  () => setState(() => role = 'super_admin'),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 28),
+                          // Action buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: isLoading ? null : () => Navigator.pop(context),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Cancel',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: GestureDetector(
+                                  onTap: isLoading
+                                      ? null
+                                      : () async {
+                                          if (nameController.text.isEmpty ||
+                                              emailController.text.isEmpty) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: const Text('Please fill username and email'),
+                                                backgroundColor: Colors.red.shade400,
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          if (passwordController.text.isEmpty) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text(user != null
+                                                    ? 'Password is required to update user'
+                                                    : 'Password is required for new users'),
+                                                backgroundColor: Colors.red.shade400,
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+
+                                          final authProvider =
+                                              Provider.of<AuthProvider>(context, listen: false);
+
+                                          bool success;
+                                          if (user != null) {
+                                            final updatedUser = UserModel(
+                                              id: user.id,
+                                              name: nameController.text.trim(),
+                                              email: emailController.text.trim(),
+                                              password: passwordController.text,
+                                              role: role,
+                                              createdAt: user.createdAt,
+                                            );
+                                            success = await authProvider.updateUser(updatedUser);
+                                          } else {
+                                            final newUser = UserModel(
+                                              id: '',
+                                              name: nameController.text.trim(),
+                                              email: emailController.text.trim(),
+                                              password: passwordController.text,
+                                              role: role,
+                                              createdAt: DateTime.now(),
+                                            );
+                                            success = await authProvider.addUser(newUser);
+                                          }
+
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+
+                                          if (success) {
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Row(
+                                                  children: [
+                                                    const Icon(Icons.check_circle, color: Colors.white),
+                                                    const SizedBox(width: 12),
+                                                    Text(user != null ? 'User updated successfully!' : 'User added successfully!'),
+                                                  ],
+                                                ),
+                                                backgroundColor: Colors.green.shade400,
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Row(
+                                                  children: [
+                                                    const Icon(Icons.error_outline, color: Colors.white),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(child: Text(authProvider.errorMessage ?? 'Operation failed')),
+                                                  ],
+                                                ),
+                                                backgroundColor: Colors.red.shade400,
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: accentColor,
+                                      borderRadius: BorderRadius.circular(14),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: accentColor.withValues(alpha: 0.4),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: isLoading
+                                          ? const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Color(0xFF1A1A1A),
+                                              ),
+                                            )
+                                          : Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  user != null ? Icons.save : Icons.person_add,
+                                                  color: const Color(0xFF1A1A1A),
+                                                  size: 20,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  user != null ? 'Update User' : 'Add User',
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Color(0xFF1A1A1A),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      user != null ? 'Update' : 'Add',
-                      style: const TextStyle(color: Colors.white),
-                    ),
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildRoleChipThemed(
+    String value,
+    String label,
+    IconData icon,
+    bool isSelected,
+    bool isDark,
+    Color accentColor,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? accentColor.withValues(alpha: 0.15)
+              : isDark
+                  ? const Color(0xFF2A2A2A)
+                  : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? accentColor : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: accentColor.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? const Color(0xFF1A1A1A) : isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? const Color(0xFF1A1A1A) : isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+              ),
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.check_circle,
+                size: 16,
+                color: Color(0xFF1A1A1A),
+              ),
+            ],
           ],
         ),
       ),

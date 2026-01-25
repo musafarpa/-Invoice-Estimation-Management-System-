@@ -22,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _floatingController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  int _selectedAccount = -1;
 
   @override
   void initState() {
@@ -115,14 +114,6 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  void _selectAccount(int index, String username, String password) {
-    setState(() {
-      _selectedAccount = index;
-      _usernameController.text = username;
-      _passwordController.text = password;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -209,413 +200,296 @@ class _LoginScreenState extends State<LoginScreen>
 
           // Main Content
           SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: size.height * 0.06),
-
-                      // Logo
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: Center(
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8F959),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFE8F959).withValues(alpha: 0.5),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, 15),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.receipt_long_rounded,
-                              size: 40,
-                              color: Color(0xFF1A1A1A),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: size.height * 0.05),
-
-                      // Welcome Text
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: FadeTransition(
+            child: Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Logo - Custom Invoice Icon
+                        FadeTransition(
                           opacity: _fadeAnimation,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome',
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
-                                  letterSpacing: -1,
-                                  height: 1.1,
-                                ),
-                              ),
-                              Text(
-                                'Back!',
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
-                                  letterSpacing: -1,
-                                  height: 1.1,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Sign in to continue managing your business',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: size.height * 0.04),
-
-                      // Quick Login Cards
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Quick Access',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildQuickAccessCard(
-                                      index: 0,
-                                      icon: Icons.admin_panel_settings_rounded,
-                                      title: 'Admin',
-                                      subtitle: 'Full access',
-                                      username: 'admin',
-                                      password: '3210',
-                                      color: const Color(0xFF6366F1),
-                                      isDark: isDark,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildQuickAccessCard(
-                                      index: 1,
-                                      icon: Icons.person_rounded,
-                                      title: 'User',
-                                      subtitle: 'Limited access',
-                                      username: 'user',
-                                      password: 'user123',
-                                      color: const Color(0xFF10B981),
-                                      isDark: isDark,
-                                    ),
+                          child: Center(
+                            child: Container(
+                              width: 90,
+                              height: 90,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F959),
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFE8F959).withValues(alpha: 0.5),
+                                    blurRadius: 30,
+                                    offset: const Offset(0, 15),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: size.height * 0.03),
-
-                      // Divider
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: Row(
-                            children: [
-                              Expanded(child: Divider(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300)),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'or sign in manually',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                              child: CustomPaint(
+                                size: const Size(90, 90),
+                                painter: InvoiceIconPainter(),
                               ),
-                              Expanded(child: Divider(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300)),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: size.height * 0.03),
-
-                      // Form Fields
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Username Field
-                              Text(
-                                'Username',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: TextFormField(
-                                  controller: _usernameController,
-                                  keyboardType: TextInputType.text,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your username',
-                                    hintStyle: TextStyle(
-                                      color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.person_outline_rounded,
-                                      color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
-                                      size: 22,
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 18,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your username';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              // Password Field
-                              Text(
-                                'Password',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your password',
-                                    hintStyle: TextStyle(
-                                      color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.lock_outline_rounded,
-                                      color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
-                                      size: 22,
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscurePassword
-                                            ? Icons.visibility_off_outlined
-                                            : Icons.visibility_outlined,
-                                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
-                                        size: 22,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscurePassword = !_obscurePassword;
-                                        });
-                                      },
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 18,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your password';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // Forgot Password
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: () {},
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  child: Text(
-                                    'Forgot Password?',
-                                    style: TextStyle(
-                                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 28),
-
-                              // Sign In Button
-                              Consumer<AuthProvider>(
-                                builder: (context, auth, _) {
-                                  return GestureDetector(
-                                    onTap: auth.isLoading ? null : _login,
-                                    child: Container(
-                                      width: double.infinity,
-                                      height: 58,
-                                      decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
-                                        borderRadius: BorderRadius.circular(16),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: isDark
-                                                ? const Color(0xFFE8F959).withValues(alpha: 0.3)
-                                                : const Color(0xFF1A1A1A).withValues(alpha: 0.3),
-                                            blurRadius: 20,
-                                            offset: const Offset(0, 10),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: auth.isLoading
-                                            ? SizedBox(
-                                                width: 24,
-                                                height: 24,
-                                                child: CircularProgressIndicator(
-                                                  color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-                                                  strokeWidth: 2.5,
-                                                ),
-                                              )
-                                            : Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    'Sign In',
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-                                                      letterSpacing: 0.3,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Icon(
-                                                    Icons.arrow_forward_rounded,
-                                                    color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-                                                    size: 20,
-                                                  ),
-                                                ],
-                                              ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: size.height * 0.04),
-
-                      // Footer
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: Center(
-                          child: Text(
-                            'Invoice & Estimation Manager v1.0',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                             ),
                           ),
                         ),
-                      ),
 
-                      const SizedBox(height: 20),
-                    ],
+                        const SizedBox(height: 40),
+
+                        // Welcome Text
+                        SlideTransition(
+                          position: _slideAnimation,
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Welcome Back!',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Sign in to continue managing your business',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // Form Fields
+                        SlideTransition(
+                          position: _slideAnimation,
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Username Field
+                                Text(
+                                  'Username',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: TextFormField(
+                                    controller: _usernameController,
+                                    keyboardType: TextInputType.text,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter your username',
+                                      hintStyle: TextStyle(
+                                        color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      prefixIcon: Icon(
+                                        Icons.person_outline_rounded,
+                                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                                        size: 22,
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 18,
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your username';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Password Field
+                                Text(
+                                  'Password',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: _obscurePassword,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter your password',
+                                      hintStyle: TextStyle(
+                                        color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      prefixIcon: Icon(
+                                        Icons.lock_outline_rounded,
+                                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                                        size: 22,
+                                      ),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                                          size: 22,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword = !_obscurePassword;
+                                          });
+                                        },
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 18,
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your password';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+
+                                const SizedBox(height: 32),
+
+                                // Sign In Button
+                                Consumer<AuthProvider>(
+                                  builder: (context, auth, _) {
+                                    return GestureDetector(
+                                      onTap: auth.isLoading ? null : _login,
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 58,
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFFE8F959) : const Color(0xFF1A1A1A),
+                                          borderRadius: BorderRadius.circular(16),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: isDark
+                                                  ? const Color(0xFFE8F959).withValues(alpha: 0.3)
+                                                  : const Color(0xFF1A1A1A).withValues(alpha: 0.3),
+                                              blurRadius: 20,
+                                              offset: const Offset(0, 10),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: auth.isLoading
+                                              ? SizedBox(
+                                                  width: 24,
+                                                  height: 24,
+                                                  child: CircularProgressIndicator(
+                                                    color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+                                                    strokeWidth: 2.5,
+                                                  ),
+                                                )
+                                              : Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      'Sign In',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+                                                        letterSpacing: 0.3,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Icon(
+                                                      Icons.arrow_forward_rounded,
+                                                      color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+                                                      size: 20,
+                                                    ),
+                                                  ],
+                                                ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // Footer
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Center(
+                            child: Text(
+                              'ALMARSA v1.0',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -625,99 +499,93 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
   }
+}
 
-  Widget _buildQuickAccessCard({
-    required int index,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String username,
-    required String password,
-    required Color color,
-    bool isDark = false,
-  }) {
-    final isSelected = _selectedAccount == index;
+// Custom Invoice Icon Painter
+class InvoiceIconPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double s = size.width / 90;
 
-    return GestureDetector(
-      onTap: () => _selectAccount(index, username, password),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.1)
-              : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? color : (isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? color.withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-              blurRadius: isSelected ? 15 : 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? color : (isDark ? Colors.white : const Color(0xFF1A1A1A)),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-              ),
-            ),
-            if (isSelected) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check, color: Colors.white, size: 12),
-                    SizedBox(width: 4),
-                    Text(
-                      'Selected',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
+    // Document shape paint
+    final docPaint = Paint()
+      ..color = const Color(0xFF1A1A1A)
+      ..style = PaintingStyle.fill;
+
+    // Document path
+    final docPath = Path();
+    docPath.moveTo(25 * s, 18 * s);
+    docPath.lineTo(55 * s, 18 * s);
+    docPath.lineTo(65 * s, 28 * s);
+    docPath.lineTo(65 * s, 72 * s);
+    docPath.lineTo(25 * s, 72 * s);
+    docPath.close();
+    canvas.drawPath(docPath, docPaint);
+
+    // Fold corner
+    final foldPaint = Paint()
+      ..color = const Color(0xFF3A3A3A)
+      ..style = PaintingStyle.fill;
+    final foldPath = Path();
+    foldPath.moveTo(55 * s, 18 * s);
+    foldPath.lineTo(55 * s, 28 * s);
+    foldPath.lineTo(65 * s, 28 * s);
+    foldPath.close();
+    canvas.drawPath(foldPath, foldPaint);
+
+    // Lines on document
+    final linePaint = Paint()
+      ..color = const Color(0xFFE8F959)
+      ..style = PaintingStyle.fill;
+
+    // Line 1
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(32 * s, 36 * s, 26 * s, 3 * s),
+        Radius.circular(1.5 * s),
       ),
+      linePaint,
     );
+
+    // Line 2
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(32 * s, 44 * s, 26 * s, 3 * s),
+        Radius.circular(1.5 * s),
+      ),
+      linePaint,
+    );
+
+    // Line 3 (shorter)
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(32 * s, 52 * s, 16 * s, 3 * s),
+        Radius.circular(1.5 * s),
+      ),
+      linePaint,
+    );
+
+    // Checkmark circle
+    final checkCirclePaint = Paint()
+      ..color = const Color(0xFFE8F959)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(52 * s, 62 * s), 10 * s, checkCirclePaint);
+
+    // Checkmark
+    final checkPaint = Paint()
+      ..color = const Color(0xFF1A1A1A)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5 * s
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final checkPath = Path();
+    checkPath.moveTo(47 * s, 62 * s);
+    checkPath.lineTo(50 * s, 65 * s);
+    checkPath.lineTo(57 * s, 58 * s);
+    canvas.drawPath(checkPath, checkPaint);
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

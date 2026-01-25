@@ -60,6 +60,7 @@ class EstimationItem {
   final double unitPrice;
   final double taxRate;
   final double? itemTotal; // Total from API
+  final double? apiVatAmount; // VAT amount from API
 
   EstimationItem({
     required this.id,
@@ -69,10 +70,11 @@ class EstimationItem {
     required this.unitPrice,
     this.taxRate = 0,
     this.itemTotal,
+    this.apiVatAmount,
   });
 
   double get subtotal => quantity * unitPrice;
-  double get taxAmount => subtotal * (taxRate / 100);
+  double get taxAmount => apiVatAmount ?? (subtotal * (taxRate / 100));
   double get total => itemTotal ?? (subtotal + taxAmount);
 
   EstimationItem copyWith({
@@ -83,6 +85,7 @@ class EstimationItem {
     double? unitPrice,
     double? taxRate,
     double? itemTotal,
+    double? apiVatAmount,
   }) {
     return EstimationItem(
       id: id ?? this.id,
@@ -92,6 +95,7 @@ class EstimationItem {
       unitPrice: unitPrice ?? this.unitPrice,
       taxRate: taxRate ?? this.taxRate,
       itemTotal: itemTotal ?? this.itemTotal,
+      apiVatAmount: apiVatAmount ?? this.apiVatAmount,
     );
   }
 
@@ -118,6 +122,12 @@ class EstimationItem {
       itemTotal = double.tryParse(json['total'].toString());
     }
 
+    // Parse VAT amount from API
+    double? apiVatAmount;
+    if (json['vat_amount'] != null) {
+      apiVatAmount = double.tryParse(json['vat_amount'].toString());
+    }
+
     return EstimationItem(
       id: json['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
       description: json['description'] ?? json['name'] ?? '',
@@ -126,6 +136,7 @@ class EstimationItem {
       unitPrice: price,
       taxRate: double.tryParse(json['tax_rate']?.toString() ?? '0') ?? 0,
       itemTotal: itemTotal,
+      apiVatAmount: apiVatAmount,
     );
   }
 
@@ -153,6 +164,7 @@ class EstimationModel {
   final String? clientPostalCode;
   final String? clientCity;
   final String? clientCountry;
+  final String? phoneNumber;
   final String? paymentMethod;
   final String? poNumber;
   final String? attention;
@@ -187,6 +199,7 @@ class EstimationModel {
     this.clientPostalCode,
     this.clientCity,
     this.clientCountry,
+    this.phoneNumber,
     this.paymentMethod,
     this.poNumber,
     this.attention,
@@ -225,6 +238,7 @@ class EstimationModel {
     String? clientPostalCode,
     String? clientCity,
     String? clientCountry,
+    String? phoneNumber,
     String? paymentMethod,
     String? poNumber,
     String? attention,
@@ -257,6 +271,7 @@ class EstimationModel {
       clientPostalCode: clientPostalCode ?? this.clientPostalCode,
       clientCity: clientCity ?? this.clientCity,
       clientCountry: clientCountry ?? this.clientCountry,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       poNumber: poNumber ?? this.poNumber,
       attention: attention ?? this.attention,
@@ -392,6 +407,7 @@ class EstimationModel {
       clientPostalCode: clientPostalCode,
       clientCity: clientCity,
       clientCountry: clientCountry,
+      phoneNumber: json['phone_number']?.toString(),
       paymentMethod: json['payment_method']?.toString(),
       poNumber: json['po_number']?.toString(),
       attention: json['attention']?.toString(),
@@ -439,6 +455,9 @@ class EstimationModel {
     }
     if (discount != null && discount! > 0) {
       json['discount'] = discount!.toStringAsFixed(2);
+    }
+    if (phoneNumber != null && phoneNumber!.isNotEmpty) {
+      json['phone_number'] = phoneNumber;
     }
 
     return json;

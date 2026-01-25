@@ -21,6 +21,7 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
   late TextEditingController _clientPostalCodeController;
   late TextEditingController _clientCityController;
   late TextEditingController _clientCountryController;
+  late TextEditingController _phoneNumberController;
   late TextEditingController _notesController;
   late TextEditingController _discountController;
   List<EstimationItem> _items = [];
@@ -35,6 +36,7 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
     _clientPostalCodeController = TextEditingController(text: est?.clientPostalCode ?? '');
     _clientCityController = TextEditingController(text: est?.clientCity ?? '');
     _clientCountryController = TextEditingController(text: est?.clientCountry ?? '');
+    _phoneNumberController = TextEditingController(text: est?.phoneNumber ?? '');
     _notesController = TextEditingController(text: est?.notes ?? '');
     _discountController = TextEditingController(text: est?.discount?.toStringAsFixed(2) ?? '');
     _items = est?.items.toList() ?? [];
@@ -48,6 +50,7 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
     _clientPostalCodeController.dispose();
     _clientCityController.dispose();
     _clientCountryController.dispose();
+    _phoneNumberController.dispose();
     _notesController.dispose();
     _discountController.dispose();
     super.dispose();
@@ -131,6 +134,7 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
         clientPostalCode: _clientPostalCodeController.text.trim().isEmpty ? null : _clientPostalCodeController.text.trim(),
         clientCity: _clientCityController.text.trim().isEmpty ? null : _clientCityController.text.trim(),
         clientCountry: _clientCountryController.text.trim().isEmpty ? null : _clientCountryController.text.trim(),
+        phoneNumber: _phoneNumberController.text.trim().isEmpty ? null : _phoneNumberController.text.trim(),
         items: _items,
         createdAt: widget.estimation?.createdAt ?? DateTime.now(),
         validUntil: DateTime.now().add(const Duration(days: 30)),
@@ -300,6 +304,14 @@ class _EstimationFormScreenState extends State<EstimationFormScreen> {
                         label: 'Client Address',
                         icon: Icons.location_on_outlined,
                         isDark: isDark,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextField(
+                        controller: _phoneNumberController,
+                        label: 'Phone Number',
+                        icon: Icons.phone_outlined,
+                        isDark: isDark,
+                        keyboardType: TextInputType.phone,
                       ),
                       const SizedBox(height: 12),
                       _buildTextField(

@@ -14,7 +14,19 @@
       "Bash(git commit:*)",
       "Bash(git branch:*)",
       "Bash(git remote add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(rd /s /q \"d:\\\\me\\\\invoiceapp\\\\build\\\\app\\\\intermediates\\\\dex\")",
+      "Bash(unzip:*)",
+      "Bash(./gradlew clean)",
+      "Bash(sort:*)",
+      "Bash(aapt dump badging:*)",
+      "Bash(where:*)",
+      "Bash(ls:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"{}:\"\" && file \"\"{}\"\"')",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
     ]
   }
 }

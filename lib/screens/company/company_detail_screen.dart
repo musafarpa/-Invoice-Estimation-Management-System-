@@ -229,6 +229,10 @@ class CompanyDetailScreen extends StatelessWidget {
                           _buildInfoRow('Bank Name', company.bankName, Icons.account_balance, isDark),
                           _buildInfoRow('Beneficiary', company.beneficiary, Icons.person_outline, isDark),
                           _buildInfoRowWithCopy(context, 'IBAN', company.iban, Icons.credit_card, isDark),
+                          if (company.swiftCode != null && company.swiftCode!.isNotEmpty)
+                            _buildInfoRow('Swift Code', company.swiftCode!, Icons.code, isDark),
+                          if (company.accountNumberSnb != null && company.accountNumberSnb!.isNotEmpty)
+                            _buildInfoRowWithCopy(context, 'Account Number SNB', company.accountNumberSnb!, Icons.numbers, isDark),
                         ],
                       ),
 
@@ -242,6 +246,8 @@ class CompanyDetailScreen extends StatelessWidget {
                         children: [
                           _buildInfoRow('Contact Person', company.contactPerson, Icons.person, isDark),
                           _buildInfoRowWithCopy(context, 'Phone', company.contactNumber, Icons.phone, isDark),
+                          if (company.contactNumber2 != null && company.contactNumber2!.isNotEmpty)
+                            _buildInfoRowWithCopy(context, 'Phone 2', company.contactNumber2!, Icons.phone_android, isDark),
                         ],
                       ),
 

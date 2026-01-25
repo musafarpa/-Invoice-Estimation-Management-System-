@@ -21,6 +21,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
   late TextEditingController _clientPostalCodeController;
   late TextEditingController _clientCityController;
   late TextEditingController _clientCountryController;
+  late TextEditingController _phoneNumberController;
   late TextEditingController _notesController;
   late TextEditingController _discountController;
   List<InvoiceItem> _items = [];
@@ -35,6 +36,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
     _clientPostalCodeController = TextEditingController(text: inv?.clientPostalCode ?? '');
     _clientCityController = TextEditingController(text: inv?.clientCity ?? '');
     _clientCountryController = TextEditingController(text: inv?.clientCountry ?? '');
+    _phoneNumberController = TextEditingController(text: inv?.phoneNumber ?? '');
     _notesController = TextEditingController(text: inv?.notes ?? '');
     _discountController = TextEditingController(text: inv?.discount?.toStringAsFixed(2) ?? '');
     _items = inv?.items.toList() ?? [];
@@ -48,6 +50,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
     _clientPostalCodeController.dispose();
     _clientCityController.dispose();
     _clientCountryController.dispose();
+    _phoneNumberController.dispose();
     _notesController.dispose();
     _discountController.dispose();
     super.dispose();
@@ -132,6 +135,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
         clientPostalCode: _clientPostalCodeController.text.trim().isEmpty ? null : _clientPostalCodeController.text.trim(),
         clientCity: _clientCityController.text.trim().isEmpty ? null : _clientCityController.text.trim(),
         clientCountry: _clientCountryController.text.trim().isEmpty ? null : _clientCountryController.text.trim(),
+        phoneNumber: _phoneNumberController.text.trim().isEmpty ? null : _phoneNumberController.text.trim(),
         items: _items,
         createdAt: widget.invoice?.createdAt ?? DateTime.now(),
         dueDate: DateTime.now().add(const Duration(days: 30)),
@@ -302,6 +306,14 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                         label: 'Client Address',
                         icon: Icons.location_on_outlined,
                         isDark: isDark,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextField(
+                        controller: _phoneNumberController,
+                        label: 'Phone Number',
+                        icon: Icons.phone_outlined,
+                        isDark: isDark,
+                        keyboardType: TextInputType.phone,
                       ),
                       const SizedBox(height: 12),
                       _buildTextField(

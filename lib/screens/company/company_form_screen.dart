@@ -29,6 +29,9 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
   late TextEditingController _ibanController;
   late TextEditingController _contactPersonController;
   late TextEditingController _contactNumberController;
+  late TextEditingController _contactNumber2Controller;
+  late TextEditingController _swiftCodeController;
+  late TextEditingController _accountNumberSnbController;
   late TextEditingController _addressEnController;
   late TextEditingController _addressArController;
   late TextEditingController _cityController;
@@ -57,6 +60,9 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
     _ibanController = TextEditingController(text: widget.company?.iban ?? '');
     _contactPersonController = TextEditingController(text: widget.company?.contactPerson ?? '');
     _contactNumberController = TextEditingController(text: widget.company?.contactNumber ?? '');
+    _contactNumber2Controller = TextEditingController(text: widget.company?.contactNumber2 ?? '');
+    _swiftCodeController = TextEditingController(text: widget.company?.swiftCode ?? '');
+    _accountNumberSnbController = TextEditingController(text: widget.company?.accountNumberSnb ?? '');
     _addressEnController = TextEditingController(text: widget.company?.addressEn ?? '');
     _addressArController = TextEditingController(text: widget.company?.addressAr ?? '');
     _cityController = TextEditingController(text: widget.company?.city ?? '');
@@ -79,6 +85,9 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
     _ibanController.dispose();
     _contactPersonController.dispose();
     _contactNumberController.dispose();
+    _contactNumber2Controller.dispose();
+    _swiftCodeController.dispose();
+    _accountNumberSnbController.dispose();
     _addressEnController.dispose();
     _addressArController.dispose();
     _cityController.dispose();
@@ -211,6 +220,9 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
       iban: _ibanController.text.trim(),
       contactPerson: _contactPersonController.text.trim(),
       contactNumber: _contactNumberController.text.trim(),
+      contactNumber2: _contactNumber2Controller.text.trim().isEmpty ? null : _contactNumber2Controller.text.trim(),
+      swiftCode: _swiftCodeController.text.trim().isEmpty ? null : _swiftCodeController.text.trim(),
+      accountNumberSnb: _accountNumberSnbController.text.trim().isEmpty ? null : _accountNumberSnbController.text.trim(),
       addressEn: _addressEnController.text.trim().isEmpty ? null : _addressEnController.text.trim(),
       addressAr: _addressArController.text.trim().isEmpty ? null : _addressArController.text.trim(),
       city: _cityController.text.trim().isEmpty ? null : _cityController.text.trim(),
@@ -367,16 +379,16 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
 
                         const SizedBox(height: 20),
 
-                        // Company Info Section (English)
+                        // Company Info Section
                         _buildSectionCard(
-                          title: 'Company Information (English)',
+                          title: 'Company Information',
                           icon: Icons.business_rounded,
                           iconColor: const Color(0xFF6C63FF),
                           isDark: isDark,
                           children: [
                             _buildTextField(
                               controller: _nameEnController,
-                              label: 'Company Name (English)',
+                              label: 'Company Name',
                               hint: 'Enter company name',
                               icon: Icons.business,
                               isDark: isDark,
@@ -390,39 +402,10 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
                             const SizedBox(height: 16),
                             _buildTextField(
                               controller: _subtitleEnController,
-                              label: 'Tagline / Subtitle (English)',
+                              label: 'Tagline / Subtitle',
                               hint: 'e.g., The Ultimate Solution',
                               icon: Icons.subtitles_outlined,
                               isDark: isDark,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Company Info Section (Arabic)
-                        _buildSectionCard(
-                          title: 'Company Information (Arabic)',
-                          icon: Icons.translate_rounded,
-                          iconColor: const Color(0xFF9C27B0),
-                          isDark: isDark,
-                          children: [
-                            _buildTextField(
-                              controller: _nameArController,
-                              label: 'Company Name (Arabic)',
-                              hint: 'اسم الشركة',
-                              icon: Icons.business,
-                              isDark: isDark,
-                              textDirection: TextDirection.rtl,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              controller: _subtitleArController,
-                              label: 'Tagline / Subtitle (Arabic)',
-                              hint: 'الشعار',
-                              icon: Icons.subtitles_outlined,
-                              isDark: isDark,
-                              textDirection: TextDirection.rtl,
                             ),
                           ],
                         ),
@@ -475,16 +458,16 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
 
                         const SizedBox(height: 20),
 
-                        // Address Section (English)
+                        // Address Section
                         _buildSectionCard(
-                          title: 'Address (English)',
+                          title: 'Address & Location',
                           icon: Icons.location_on_rounded,
                           iconColor: const Color(0xFF4CAF50),
                           isDark: isDark,
                           children: [
                             _buildTextField(
                               controller: _addressEnController,
-                              label: 'Address (English)',
+                              label: 'Address',
                               hint: 'Street address',
                               icon: Icons.location_on_outlined,
                               isDark: isDark,
@@ -543,26 +526,6 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
 
                         const SizedBox(height: 20),
 
-                        // Address Section (Arabic)
-                        _buildSectionCard(
-                          title: 'Address (Arabic)',
-                          icon: Icons.location_on_rounded,
-                          iconColor: const Color(0xFF8BC34A),
-                          isDark: isDark,
-                          children: [
-                            _buildTextField(
-                              controller: _addressArController,
-                              label: 'Address (Arabic)',
-                              hint: 'العنوان بالعربي',
-                              icon: Icons.location_on_outlined,
-                              isDark: isDark,
-                              textDirection: TextDirection.rtl,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
                         // Bank Details Section
                         _buildSectionCard(
                           title: 'Bank Details',
@@ -593,6 +556,30 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
                               icon: Icons.credit_card,
                               isDark: isDark,
                             ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _swiftCodeController,
+                                    label: 'Swift Code',
+                                    hint: 'e.g., SABBSARI',
+                                    icon: Icons.code,
+                                    isDark: isDark,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _accountNumberSnbController,
+                                    label: 'Account Number SNB',
+                                    hint: 'Account number',
+                                    icon: Icons.numbers,
+                                    isDark: isDark,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
 
@@ -618,6 +605,15 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
                               label: 'Contact Number',
                               hint: '+966 XX XXX XXXX',
                               icon: Icons.phone,
+                              keyboardType: TextInputType.phone,
+                              isDark: isDark,
+                            ),
+                            const SizedBox(height: 16),
+                            _buildTextField(
+                              controller: _contactNumber2Controller,
+                              label: 'Contact Number 2',
+                              hint: '+966 XX XXX XXXX (Optional)',
+                              icon: Icons.phone_android,
                               keyboardType: TextInputType.phone,
                               isDark: isDark,
                             ),

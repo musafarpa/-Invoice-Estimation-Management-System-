@@ -519,6 +519,10 @@ class _EstimationDetailScreenState extends State<EstimationDetailScreen> {
                               const SizedBox(height: 12),
                               _buildInfoRow(Icons.location_on_outlined, _estimation.clientAddress, isDark: isDark),
                             ],
+                            if (_estimation.phoneNumber != null && _estimation.phoneNumber!.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              _buildInfoRow(Icons.phone_android_outlined, '${isRTL ? 'رقم الهاتف' : 'Phone'}: ${_estimation.phoneNumber}', isDark: isDark),
+                            ],
                             if (_estimation.clientVatNumber != null && _estimation.clientVatNumber!.isNotEmpty) ...[
                               const SizedBox(height: 12),
                               _buildInfoRow(Icons.receipt_outlined, '${isRTL ? 'الرقم الضريبي' : 'VAT'}: ${_estimation.clientVatNumber}', isDark: isDark),
@@ -550,7 +554,7 @@ class _EstimationDetailScreenState extends State<EstimationDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ..._estimation.items.map((item) => _buildItemCard(item, currencyFormat, isDark)),
+                      ..._estimation.items.map((item) => _buildItemCard(item, currencyFormat, isDark, isRTL)),
                       const SizedBox(height: 24),
 
                       // Summary
@@ -785,7 +789,7 @@ class _EstimationDetailScreenState extends State<EstimationDetailScreen> {
     );
   }
 
-  Widget _buildItemCard(EstimationItem item, NumberFormat currencyFormat, bool isDark) {
+  Widget _buildItemCard(EstimationItem item, NumberFormat currencyFormat, bool isDark, bool isRTL) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
@@ -831,6 +835,30 @@ class _EstimationDetailScreenState extends State<EstimationDetailScreen> {
               ),
             ],
           ),
+          // Show VAT amount per item
+          if (item.taxAmount > 0) ...[
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isRTL ? 'ضريبة القيمة المضافة' : 'VAT Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
+                  ),
+                ),
+                Text(
+                  currencyFormat.format(item.taxAmount),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.orange.shade300 : Colors.orange.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
